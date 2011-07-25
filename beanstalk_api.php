@@ -330,7 +330,7 @@ class beanstalk_api {
 	 * @param null $curl_param
 	 * @return mixed
 	 */
-	private function _execute_curl($api_name, $api_params = NULL, $curl_param = NULL) {
+	private function _execute_curl($api_name, $api_params = NULL, $curl_verb = "GET", $write_data = NULL) {
 		if( ! isset($api_params))
 			$ch = curl_init("https://" . $this->account_name . ".beanstalkapp.com/api/" . $api_name);
 		else
@@ -341,8 +341,11 @@ class beanstalk_api {
 		curl_setopt($ch, CURLOPT_USERPWD, $this->username . ':' . $this->password);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION,1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		if($curl_param == "PUT")
-			curl_setopt($ch, CURLOPT_PUT, 1);
+		
+		if(!is_null($write_data))
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $write_data);
+		
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $curl_verb);
 
 		$data = curl_exec($ch);
 		curl_close($ch);
