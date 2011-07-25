@@ -92,6 +92,37 @@ class beanstalk_api {
 		return $this->_execute_curl("users", "current.xml");
 	}
 
+	/**
+	 * Create a new Beanstalk user
+	 *
+	 * @link http://api.beanstalkapp.com/user.html
+	 * @param string $login
+	 * @param string $email
+	 * @param string $first_name
+	 * @param string $last_name
+	 * @param string $password
+	 * @param int $admin [optional]
+	 * @param string $timezone [optional]
+	 * @return xml
+	 */
+	public function create_user($login, $email, $first_name, $last_name, $password, $admin = 0, $timezone = NULL) {
+		if(empty($login) || empty($email) || empty($first_name) || empty($last_name) || empty($password))
+			return "Some required fields missing";
+		
+		$xml = new SimpleXMLElement('<user></user>');
+		
+		$xml->addChild('login', $login);
+		$xml->addChild('email', $email);
+		$xml->addChild('first_name', $first_name);
+		$xml->addChild('last_name', $last_name);
+		$xml->addChild('password', $password);
+		$xml->addChild('admin', $admin); // Should change to optional?
+		
+		if(!is_null($timezone))
+			$xml->addChild('timezone', $timezone);
+		
+		return $this->_execute_curl("users.xml", NULL, "POST", $xml->asXml());
+	}
 
 	//
 	// Repositories
