@@ -360,6 +360,33 @@ class beanstalk_api {
 			return $this->_execute_curl($repo_id, "comments/" . $comment_id . ".xml");
 	}
 
+	/**
+	 * Create new comment - unclear from docs which parameters are required
+	 *
+	 * @link http://api.beanstalkapp.com/comment.html
+	 * @param integer $repo_id
+	 * @param integer $revision_id
+	 * @param string $body
+	 * @param string $file_path
+	 * @param integer $line_number
+	 * @return xml
+	 */
+	public function create_comment($repo_id, $revision_id, $body, $file_path, $line_number) {
+		if(empty($repo_id) || empty($revision_id) || empty($body) || empty($file_path) || empty($line_number))
+			return "Some required fields missing";
+		
+		$xml = new SimpleXMLElement('<comment></comment>');
+		
+		$revision_xml = $xml->addChild('revision', $revision_id);
+		$revision_xml->addAttribute('type', 'integer');
+		
+		$xml->addChild('body', $body);
+		$xml->addChild('file_path', $file_path);
+		$xml->addChild('line_number', $line_number); // Should this have type attribute set as well?
+		
+		return $this->_execute_curl($repo_id, "comments.xml", "POST", $xml->asXml());
+	}
+
 
 	//
 	// Server Environments
