@@ -253,9 +253,9 @@ class beanstalk_api {
 	 */
 	private function _execute_curl($api_name, $api_params = NULL, $curl_param = NULL) {
 		if( ! isset($api_params))
-			$ch = curl_init("http://" . $this->account_name . ".beanstalkapp.com/api/" . $api_name);
+			$ch = curl_init("https://" . $this->account_name . ".beanstalkapp.com/api/" . $api_name);
 		else
-			$ch = curl_init("http://" . $this->account_name . ".beanstalkapp.com/api/" . $api_name . "/" . $api_params);
+			$ch = curl_init("https://" . $this->account_name . ".beanstalkapp.com/api/" . $api_name . "/" . $api_params);
 			
 		$headers = array('Content-type: application/xml');
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
