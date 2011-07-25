@@ -1,6 +1,7 @@
 # Alpha Beanstalk PHP API Documentation #
 
 ## Installation ##
+Requires PHP 5
 1. Edit the configuration options at the top of beanstalk_api.php to match your info
 2. Copy beanstalk_api.php into a directory on your webserver
 3. Call beanstalk_api.php in the php file you wish to use it in using `require_once('path/beanstalk_api.php');`
