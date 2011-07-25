@@ -10,9 +10,15 @@ class beanstalk_api {
 	private $username		= 'username';		// Beanstalk username
 	private $password		= 'password';		// Beanstalk password
 
+
+	//
+	// Account
+	//
+
 	/**
 	 * Returns Beanstalk account details.
 	 *
+	 * @link http://api.beanstalkapp.com/account.html
 	 * @return xml
 	 */
 	public function get_account_details() {
@@ -22,6 +28,7 @@ class beanstalk_api {
 	/**
 	 * Allows a user to update their account details by sending specific parameters
 	 *
+	 * @link http://api.beanstalkapp.com/account.html
 	 * @param string $name			required
 	 * @param string $time_zone		required
 	 * @return xml
@@ -31,18 +38,30 @@ class beanstalk_api {
 			return "Name and time zone required";
 	}
 
+
+	//
+	// Plans
+	//
+
 	/**
 	 * Returns Beanstalk account plans
 	 *
-	 * @returns xml
+	 * @link http://api.beanstalkapp.com/plan.html
+	 * @return xml
 	 */
 	public function find_all_plans() {
 		return $this->_execute_curl("plans.xml");
 	}
 
+
+	//
+	// Users
+	//
+
 	/**
 	 * Returns Beanstalk account user list.
 	 *
+	 * @link http://api.beanstalkapp.com/user.html
 	 * @return xml
 	 */
 	public function find_all_users() {
@@ -52,6 +71,7 @@ class beanstalk_api {
 	/**
 	 * Returns a Beanstalk account user based on a specific user ID
 	 *
+	 * @link http://api.beanstalkapp.com/user.html
 	 * @param integer $user_id		required
 	 * @return xml
 	 */
@@ -65,15 +85,22 @@ class beanstalk_api {
 	/**
 	 * Returns Beanstalk user currently being used to access the API
 	 *
+	 * @link http://api.beanstalkapp.com/user.html
 	 * @return xml
 	 */
 	public function find_current_user() {
 		return $this->_execute_curl("users", "current.xml");
 	}
 
+
+	//
+	// Repositories
+	//
+
 	/**
 	 * Returns Beanstalk account repository list
 	 *
+	 * @link http://api.beanstalkapp.com/repository.html
 	 * @return xml
 	 */
 	public function find_all_repositories() {
@@ -83,6 +110,7 @@ class beanstalk_api {
 	/**
 	 * Returns a Beanstalk account repository based on a specific repository ID
 	 *
+	 * @link http://api.beanstalkapp.com/repository.html
 	 * @param integer $repo_id		required
 	 * @return xml
 	 */
@@ -93,9 +121,15 @@ class beanstalk_api {
 			return $this->_execute_curl("repositories", $repo_id . ".xml");
 	}
 
+
+	//
+	// Changesets
+	//
+
 	/**
 	 * Returns Beanstalk account changeset list
 	 *
+	 * @link http://api.beanstalkapp.com/changeset.html
 	 * @return xml
 	 */
 	public function find_all_changesets() {
@@ -105,6 +139,7 @@ class beanstalk_api {
 	/**
 	 * Returns a Beanstalk repository changeset based on a specific repository ID
 	 *
+	 * @link http://api.beanstalkapp.com/changeset.html
 	 * @param integer $repo_id		required
 	 * @return xml
 	 */
@@ -118,6 +153,7 @@ class beanstalk_api {
 	/**
 	 * Returns a Beanstalk repository's specific changeset based on a specific repository ID and changeset ID
 	 *
+	 * @link http://api.beanstalkapp.com/changeset.html
 	 * @param integer $repo_id		required
 	 * @param integer $revision		required
 	 * @return xml
@@ -128,10 +164,16 @@ class beanstalk_api {
 		else
 			return $this->_execute_curl("changesets", $revision . ".xml?repository_id=" . $repo_id);
 	}
-	
+
+
+	//
+	// Comments
+	//
+
    /**
 	* Returns a Beanstalk repository's comment listing
 	*
+	* @link http://api.beanstalkapp.com/comment.html
 	* @param integer $repo_id		required
 	* @return xml
 	*/
@@ -143,12 +185,13 @@ class beanstalk_api {
 	}
 		
 	/**
-	* Returns a Beanstalk repository's comment listing for a specific changeset
-	*
-	* @param integer $repo_id		required
-	* @param integer $revision		required
-	* @return xml
-	*/
+	 * Returns a Beanstalk repository's comment listing for a specific changeset
+	 *
+	 * @link http://api.beanstalkapp.com/comment.html
+	 * @param integer $repo_id		required
+	 * @param integer $revision		required
+	 * @return xml
+	 */
 	public function find_all_changeset_comments($repo_id, $revision) {
 		if(empty($repo_id) || empty($revision))
 			return "Repository ID and revision ID required";
@@ -157,101 +200,128 @@ class beanstalk_api {
 	}
 		
 	/**
-	* Returns a Beanstalk repository's comment based on a specific comment ID
-	*
-	* @param integer $repo_id		required
-	* @param integer $revision		required
-	* @return xml
-	*/
+	 * Returns a Beanstalk repository's comment based on a specific comment ID
+	 *
+	 * @link http://api.beanstalkapp.com/comment.html
+	 * @param integer $repo_id		required
+	 * @param integer $revision		required
+	 * @return xml
+	 */
 	public function find_single_comment($repo_id, $comment_id) {
 		if(empty($repo_id) || empty($comment_id))
 			return "Repository ID and comment ID required";
 		else
 			return $this->_execute_curl($repo_id, "comments/" . $comment_id . ".xml");
 	}
-		
+
+
+	//
+	// Server Environments
+	//
+
 	/**
-	* Returns a Beanstalk repository's server environment listing
-	*
-	* @param integer $repo_id		required
-	* @return xml
-	*/
+	 * Returns a Beanstalk repository's server environment listing
+	 *
+	 * @link http://api.beanstalkapp.com/server_environment.html
+	 * @param integer $repo_id		required
+	 * @return xml
+	 */
 	public function find_all_server_environments($repo_id) {
 		if(empty($repo_id))
 			return "Repository ID required";
 		else
 			return $this->_execute_curl($repo_id, "server_environments.xml");
 	}
-		
+
 	/**
-	* Returns a Beanstalk repository's server environment listing based on a specific environment ID
-	*
-	* @param integer $repo_id		required
-	* @param integer $environment_id	required
-	* @return xml
-	*/
+	 * Returns a Beanstalk repository's server environment listing based on a specific environment ID
+	 *
+	 * @link http://api.beanstalkapp.com/server_environment.html
+	 * @param integer $repo_id		required
+	 * @param integer $environment_id	required
+	 * @return xml
+	 */
 	public function find_single_server_environment($repo_id, $environment_id) {
 		if(empty($repo_id) || empty($environment_id))
 			return "Repository ID required";
 		else
 			return $this->_execute_curl($repo_id, "server_environments/" . $environment_id . ".xml");
 	}
-		
+
+
+	//
+	// Release Servers
+	//
+
 	/**
-	* Returns a Beanstalk repository's release server listing
-	*
-	* @param integer $repo_id		required
-	* @param integer $environment_id	required
-	* @return xml
-	*/
+	 * Returns a Beanstalk repository's release server listing
+	 *
+	 * @link http://api.beanstalkapp.com/release_server.html
+	 * @param integer $repo_id		required
+	 * @param integer $environment_id	required
+	 * @return xml
+	 */
 	function find_all_release_servers($repo_id, $environment_id) {
 		if(empty($repo_id) || empty($environment_id))
 			return "Repository ID and environment ID required";
 		else
 			return $this->_execute_curl($repo_id, "release_servers.xml?environment_id=" . $environment_id);
 	}
-		
+
 	/**
-	* Returns a Beanstalk repository's release server listing based on a specific server ID
-	*
-	* @param integer $repo_id		required
-	* @param integer $server_id		required
-	* @return xml
-	*/
+	 * Returns a Beanstalk repository's release server listing based on a specific server ID
+	 *
+	 * @link http://api.beanstalkapp.com/release_server.html
+	 * @param integer $repo_id		required
+	 * @param integer $server_id		required
+	 * @return xml
+	 */
 	public function find_single_release_server($repo_id, $server_id) {
 		if(empty($repo_id) || empty($server_id))
 			return "Repository ID and server ID required";
 		else
 			return $this->_execute_curl($repo_id, "release_servers/" . $server_id . ".xml");
 	}
-		
+
+
+	//
+	// Releases
+	//
+
 	/**
-	* Returns a Beanstalk repository's successful releases listing
-	*
-	* @param integer $repo_id		required
-	* @return xml
-	*/
+	 * Returns a Beanstalk repository's successful releases listing
+	 *
+	 * @link http://api.beanstalkapp.com/release.html
+	 * @param integer $repo_id		required
+	 * @return xml
+	 */
 	public function find_all_sucessful_releases($repo_id) {
 		if(empty($repo_id))
 			return "Repository ID required";
 		else
 			return $this->_execute_curl($repo_id, "releases.xml");
 	}
-		
+
 	/**
-	* Returns a Beanstalk repository's release based on a specific release id
-	*
-	* @param integer $repo_id		required
-	* @param integer $release_id		required
-	* @return xml
-	*/
+	 * Returns a Beanstalk repository's release based on a specific release id
+	 *
+	 * @link http://api.beanstalkapp.com/release.html
+	 * @param integer $repo_id		required
+	 * @param integer $release_id		required
+	 * @return xml
+	 */
 	public function find_single_release($repo_id, $release_id) {
 		if(empty($repo_id) || empty($release_id))
 			return "Repository ID and release ID required";
 		else
 			return $this->_execute_curl($repo_id, $release_id . ".xml");
 	}
-	
+
+
+	//
+	// Utility functions
+	//
+
 	/**
 	 * Sets up and executes the cURL requests and returns the response
 	 *
