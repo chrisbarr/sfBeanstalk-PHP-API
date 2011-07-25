@@ -63,6 +63,15 @@ class beanstalk_api {
 	}
 
 	/**
+	 * Returns Beanstalk user currently being used to access the API
+	 *
+	 * @return xml
+	 */
+	public function find_current_user() {
+		return $this->_execute_curl("users", "current.xml");
+	}
+
+	/**
 	 * Returns Beanstalk account repository list
 	 *
 	 * @return xml
