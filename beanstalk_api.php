@@ -6,7 +6,7 @@ class beanstalk_api {
 	 * Please enter your account name, username and password below.
 	 */
 
-	private $account_name	= 'example';		// Beanstalk account name (first segment of your beanstalk URL - http://example.beanstalkapp.com)
+	private $account_name		= 'example';		// Beanstalk account name (first segment of your beanstalk URL - http://example.beanstalkapp.com)
 	private $username		= 'username';		// Beanstalk username
 	private $password		= 'password';		// Beanstalk password
 
@@ -15,7 +15,7 @@ class beanstalk_api {
 	 *
 	 * @return xml
 	 */
-	function get_account_details() {
+	public function get_account_details() {
 		return $this->_execute_curl("account.xml");
 	}
 
@@ -26,7 +26,7 @@ class beanstalk_api {
 	 * @param string $time_zone		required
 	 * @return xml
 	 */
-	function update_account_details($name, $time_zone) {
+	public function update_account_details($name, $time_zone) {
 		if(empty($name) || empty($time_zone))
 			return "Name and time zone required";
 	}
@@ -36,7 +36,7 @@ class beanstalk_api {
 	 *
 	 * @returns xml
 	 */
-	function find_all_plans() {
+	public function find_all_plans() {
 		return $this->_execute_curl("plans.xml");
 	}
 
@@ -45,7 +45,7 @@ class beanstalk_api {
 	 *
 	 * @return xml
 	 */
-	function find_all_users() {
+	public function find_all_users() {
 		return $this->_execute_curl("users.xml");
 	}
 
@@ -55,7 +55,7 @@ class beanstalk_api {
 	 * @param integer $user_id		required
 	 * @return xml
 	 */
-	function find_single_user($user_id) {
+	public function find_single_user($user_id) {
 		if(empty($user_id))
 			return "User ID required";
 		else
@@ -67,7 +67,7 @@ class beanstalk_api {
 	 *
 	 * @return xml
 	 */
-	function find_all_repositories() {
+	public function find_all_repositories() {
 		return $this->_execute_curl("repositories.xml");
 	}
 
@@ -77,7 +77,7 @@ class beanstalk_api {
 	 * @param integer $repo_id		required
 	 * @return xml
 	 */
-	function find_single_repository($repo_id) {
+	public function find_single_repository($repo_id) {
 		if(empty($repo_id))
 			return "Repository ID required";
 		else
@@ -89,7 +89,7 @@ class beanstalk_api {
 	 *
 	 * @return xml
 	 */
-	function find_all_changesets() {
+	public function find_all_changesets() {
 		return $this->_execute_curl("changesets.xml");
 	}
 
@@ -99,7 +99,7 @@ class beanstalk_api {
 	 * @param integer $repo_id		required
 	 * @return xml
 	 */
-	function find_single_repository_changeset($repo_id) {
+	public function find_single_repository_changeset($repo_id) {
 		if(empty($repo_id))
 			return "Repository ID required";
 		else
@@ -113,7 +113,7 @@ class beanstalk_api {
 	 * @param integer $revision		required
 	 * @return xml
 	 */
-	function find_single_changeset($repo_id, $revision) {
+	public function find_single_changeset($repo_id, $revision) {
 		if(empty($repo_id) || empty($revision))
 			return "Changeset ID and repository ID required";
 		else
@@ -126,7 +126,7 @@ class beanstalk_api {
 	* @param integer $repo_id		required
 	* @return xml
 	*/
-	function find_all_comments($repo_id) {
+	public function find_all_comments($repo_id) {
 		if(empty($repo_id))
 			return "Repository ID required";
 		else
@@ -140,7 +140,7 @@ class beanstalk_api {
 	* @param integer $revision		required
 	* @return xml
 	*/
-	function find_all_changeset_comments($repo_id, $revision) {
+	public function find_all_changeset_comments($repo_id, $revision) {
 		if(empty($repo_id) || empty($revision))
 			return "Repository ID and revision ID required";
 		else
@@ -154,7 +154,7 @@ class beanstalk_api {
 	* @param integer $revision		required
 	* @return xml
 	*/
-	function find_single_comment($repo_id, $comment_id) {
+	public function find_single_comment($repo_id, $comment_id) {
 		if(empty($repo_id) || empty($comment_id))
 			return "Repository ID and comment ID required";
 		else
@@ -167,7 +167,7 @@ class beanstalk_api {
 	* @param integer $repo_id		required
 	* @return xml
 	*/
-	function find_all_server_environments($repo_id) {
+	public function find_all_server_environments($repo_id) {
 		if(empty($repo_id))
 			return "Repository ID required";
 		else
@@ -181,7 +181,7 @@ class beanstalk_api {
 	* @param integer $environment_id	required
 	* @return xml
 	*/
-	function find_single_server_environment($repo_id, $environment_id) {
+	public function find_single_server_environment($repo_id, $environment_id) {
 		if(empty($repo_id) || empty($environment_id))
 			return "Repository ID required";
 		else
@@ -209,7 +209,7 @@ class beanstalk_api {
 	* @param integer $server_id		required
 	* @return xml
 	*/
-	function find_single_release_server($repo_id, $server_id) {
+	public function find_single_release_server($repo_id, $server_id) {
 		if(empty($repo_id) || empty($server_id))
 			return "Repository ID and server ID required";
 		else
@@ -222,7 +222,7 @@ class beanstalk_api {
 	* @param integer $repo_id		required
 	* @return xml
 	*/
-	function find_all_sucessful_releases($repo_id) {
+	public function find_all_sucessful_releases($repo_id) {
 		if(empty($repo_id))
 			return "Repository ID required";
 		else
@@ -236,7 +236,7 @@ class beanstalk_api {
 	* @param integer $release_id		required
 	* @return xml
 	*/
-	function find_single_release($repo_id, $release_id) {
+	public function find_single_release($repo_id, $release_id) {
 		if(empty($repo_id) || empty($release_id))
 			return "Repository ID and release ID required";
 		else
@@ -251,7 +251,7 @@ class beanstalk_api {
 	 * @param null $curl_param
 	 * @return mixed
 	 */
-	function _execute_curl($api_name, $api_params = NULL, $curl_param = NULL) {
+	private function _execute_curl($api_name, $api_params = NULL, $curl_param = NULL) {
 		if( ! isset($api_params))
 			$ch = curl_init("http://" . $this->account_name . ".beanstalkapp.com/api/" . $api_name);
 		else
