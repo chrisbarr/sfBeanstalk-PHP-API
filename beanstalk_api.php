@@ -205,6 +205,68 @@ class beanstalk_api {
 			return $this->_execute_curl("repositories", $repo_id . ".xml");
 	}
 
+	/**
+	 * Create a repository
+	 *
+	 * @link http://api.beanstalkapp.com/repository.html
+	 * @param string $name
+	 * @param string $type_id [optional] Can be git or subversion
+	 * @param string $title
+	 * @param bool $create_structure [optional]
+	 * @param string $color_label [optional] Accepts - red, orange, yellow, green, blue, pink, grey
+	 * @return xml
+	 */
+	public function create_repository($name, $type_id = "subversion", $title, $create_structure = true, $color_label = "grey") {
+		if(empty($name) || empty($title))
+			return "Repository name and title required";
+		
+		$xml = new SimpleXMLElement('<repository></repository>');
+		
+		$xml->addChild('name', $name);
+		
+		if(!is_null($type_id))
+			$xml->addChild('type_id', $type_id);
+		
+		$xml->addChild('title', $title);
+		
+		if(!is_null($create_structure))
+			$xml->addChild('create_structure', $create_structure);
+		
+		if(!is_null($color_label))
+			$xml->addChild('color_label', "label-" . $color_label);
+		
+		return $this->_execute_curl("repositories.xml", NULL, "POST", $xml->asXml());
+	}
+
+	/**
+	 * Update an existing repository
+	 *
+	 * @link http://api.beanstalkapp.com/repository.html
+	 * @param integer $repo_id
+	 * @param array $params Accepts - name, title, color_label (red, orange, yellow, green, blue, pink, grey)
+	 * @return xml
+	 */
+	public function update_repository($repo_id, $params = array()) {
+		if(empty($repo_id))
+			return "Repository ID required";
+		
+		if(count($params) == 0)
+			return "Nothing to update";
+		
+		$xml = new SimpleXMLElement('<repository></repository>');
+		
+		if(isset($params['name']))
+			$xml->addChild('name', $params['name']);
+		
+		if(isset($params['title']))
+			$xml->addChild('title', $params['title']);
+		
+		if(isset($params['color-label']))
+			$xml->addChild('color-label', "label-" . $params['color-label']);
+		
+		return $this->_execute_curl("repositories", $repo_id . ".xml", "PUT", $xml->asXml());
+	}
+
 
 	//
 	// Changesets
