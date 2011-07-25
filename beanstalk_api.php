@@ -124,6 +124,42 @@ class beanstalk_api {
 		return $this->_execute_curl("users.xml", NULL, "POST", $xml->asXml());
 	}
 
+	/**
+	 * Update an existing user
+	 *
+	 * @link http://api.beanstalkapp.com/user.html
+	 * @param integer $user_id
+	 * @param array $params Accepts - email, first_name, last_name, password, admin, timezone
+	 * @return xml
+	 */
+	public function update_user($user_id, $params = array()) {
+		if(count($params) == 0)
+			return "Nothing to update";
+		
+		$xml = new SimpleXMLElement('<user></user>');
+		
+		if(isset($params['email']))
+			$xml->addChild('email', $params['email']);
+		
+		if(isset($params['first_name']))
+			$xml->addChild('first_name', $params['first_name']);
+		
+		if(isset($params['last_name']))
+			$xml->addChild('last_name', $params['last_name']);
+		
+		if(isset($params['password']))
+			$xml->addChild('password', $params['password']);
+		
+		if(isset($params['admin']))
+			$xml->addChild('admin', $params['admin']);
+		
+		if(isset($params['timezone']))
+			$xml->addChild('timezone', $params['timezone']);
+		
+		return $this->_execute_curl("users", $user_id . ".xml", "PUT", $xml->asXml());
+	}
+
+
 	//
 	// Repositories
 	//
