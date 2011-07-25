@@ -162,6 +162,20 @@ class beanstalk_api {
 		return $this->_execute_curl("users", $user_id . ".xml", "PUT", $xml->asXml());
 	}
 
+	/**
+	 * Delete a user
+	 *
+	 * @link http://api.beanstalkapp.com/user.html
+	 * @param integer $user_id
+	 * @return xml
+	 */
+	public function delete_user($user_id) {
+		if(empty($user_id))
+			return "User ID required";
+		
+		return $this->_execute_curl("users", $user_id . ".xml", "DELETE");
+	}
+
 
 	//
 	// Repositories
