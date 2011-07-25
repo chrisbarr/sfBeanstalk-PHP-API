@@ -326,8 +326,9 @@ class beanstalk_api {
 	 * Sets up and executes the cURL requests and returns the response
 	 *
 	 * @param string $api_name
-	 * @param null $api_params
-	 * @param null $curl_param
+	 * @param string $api_params [optional]
+	 * @param string $curl_verb [optional]
+	 * @param string $write_data [optional]
 	 * @return mixed
 	 */
 	private function _execute_curl($api_name, $api_params = NULL, $curl_verb = "GET", $write_data = NULL) {
