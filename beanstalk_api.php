@@ -133,6 +133,9 @@ class beanstalk_api {
 	 * @return xml
 	 */
 	public function update_user($user_id, $params = array()) {
+		if(empty($user_id))
+			return "User ID required";
+		
 		if(count($params) == 0)
 			return "Nothing to update";
 		
