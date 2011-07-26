@@ -461,6 +461,36 @@ class beanstalk_api {
 		return $this->_execute_curl($repo_id, "server_environments.xml", "POST", $xml->asXml());
 	}
 
+	/**
+	 * Update a server environment
+	 *
+	 * @link http://api.beanstalkapp.com/server_environment.html
+	 * @param integer $repo_id
+	 * @param integer $environment_id
+	 * @param array $params Accepts - name, automatic, branch_name
+	 * @return xml
+	 */
+	public function update_server_environment($repo_id, $environment_id, $params = array()) {
+		if(empty($repo_id) || empty($environment_id))
+			return "Repository ID and server environment ID requried";
+		
+		if(count($params) == 0)
+			return "Nothing to update";
+		
+		$xml = new SimpleXMLElement('<server-environment></server-environment>');
+		
+		if(isset($params['name']))
+			$xml->addChild('name', $params['name']);
+		
+		if(isset($params['automatic']))
+			$xml->addChild('automatic', $params['automatic']);
+		
+		if(isset($params['branch_name']))
+			$xml->addChild('branch_name', $params['branch_name']);
+		
+		return $this->_execute_curl($repo_id, "server_environments/" . $environment_id . ".xml", "PUT", $xml->asXml());
+	}
+
 
 	//
 	// Release Servers

@@ -36,7 +36,8 @@ List of available function calls:
 * `create_comment(repo_id, revision_id, body, file_path, line_number);`
 * `find_all_server_environments(repo_id);`
 * `find_single_server_environment(repo_id, environment_id);`
-* `create_server_environment(repo_id, name, automatic)`
+* `create_server_environment(repo_id, name, automatic);`
+* `update_server_environment(repo_id, environment_id, params);`
 * `find_all_release_servers(repo_id, environment_id);`
 * `find_single_release_server(repo_id, server_id);`
 * `find_all_successful_releases(repo_id);`
