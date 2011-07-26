@@ -303,13 +303,14 @@ class beanstalk_api {
 	 *
 	 * @link http://api.beanstalkapp.com/changeset.html
 	 * @param integer $repo_id		required
+	 * @param integer $page [optional] UNDOCUMENTED
 	 * @return xml
 	 */
-	public function find_single_repository_changeset($repo_id) {
+	public function find_single_repository_changeset($repo_id, $page = 1) {
 		if(empty($repo_id))
 			return "Repository ID required";
 		else
-			return $this->_execute_curl("changesets", "repository.xml?repository_id=" . $repo_id);
+			return $this->_execute_curl("changesets", "repository.xml?repository_id=" . $repo_id . "&page=" . $page);
 	}
 
 	/**
