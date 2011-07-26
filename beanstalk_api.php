@@ -337,13 +337,14 @@ class beanstalk_api {
 	*
 	* @link http://api.beanstalkapp.com/comment.html
 	* @param integer $repo_id		required
+	* @param integer $page [optional] 15 results per page
 	* @return xml
 	*/
-	public function find_all_comments($repo_id) {
+	public function find_all_comments($repo_id, $page = 1) {
 		if(empty($repo_id))
 			return "Repository ID required";
 		else
-			return $this->_execute_curl($repo_id, "comments.xml");
+			return $this->_execute_curl($repo_id, "comments.xml?page=" . $page);
 	}
 		
 	/**
@@ -678,13 +679,14 @@ class beanstalk_api {
 	 *
 	 * @link http://api.beanstalkapp.com/release.html
 	 * @param integer $repo_id		required
+	 * @param integer $page [optional] 20 results per page
 	 * @return xml
 	 */
-	public function find_all_releases($repo_id) {
+	public function find_all_releases($repo_id, $page = 1) {
 		if(empty($repo_id))
 			return "Repository ID required";
 		else
-			return $this->_execute_curl($repo_id, "releases.xml");
+			return $this->_execute_curl($repo_id, "releases.xml?page=" . $page);
 	}
 
 	/**
