@@ -592,6 +592,66 @@ class beanstalk_api {
 		return $this->_execute_curl($repo_id, "release_servers.xml?environment_id=" . $environment_id, "POST", $xml->asXml());
 	}
 
+	/**
+	 * Update a release server
+	 *
+	 * @link 
+	 * @param integer $repo_id
+	 * @param integer $server_id
+	 * @param array $params Accepts - name, local_path, remote_path, remote_addr, protocol, port, login, password, use_active_mode, authenticate_by_key, use_feat, pre_release_hook, post_release_hook
+	 * @return xml
+	 */
+	public function update_release_server($repo_id, $server_id, $params = array()) {
+		if(empty($repo_id) || empty($server_id))
+			return "Repository ID and release server ID required";
+		
+		if(count($params) == 0)
+			return "Nothing to update";
+		
+		$xml = new SimpleXMLElement('<release_server></release_server>');
+		
+		if(!is_null($params['name']))
+			$xml->addChild('name', $params['name']);
+		
+		if(!is_null($params['local_path']))
+			$xml->addChild('local_path', $params['local_path']);
+		
+		if(!is_null($params['remote_path']))
+			$xml->addChild('remote_path', $params['remote_path']);
+		
+		if(!is_null($params['remote_addr']))
+			$xml->addChild('remote_addr', $params['remote_addr']);
+		
+		if(!is_null($params['protocol']))
+			$xml->addChild('protocol', $params['protocol']);
+		
+		if(!is_null($params['port']))
+			$xml->addChild('port', $params['port']);
+		
+		if(!is_null($params['login']))
+			$xml->addChild('login', $params['login']);
+
+		if(!is_null($params['password']))
+			$xml->addChild('password', $params['password']);
+
+		if(!is_null($params['use_active_mode']))
+			$xml->addChild('use_active_mode', $params['use_active_mode']);
+
+		if(!is_null($params['authenticate_by_key']))
+			$xml->addChild('authenticate_by_key', $params['authenticate_by_key']);
+
+		if(!is_null($params['use_feat']))
+			$xml->addChild('use_feat', $params['use_feat']);
+
+		if(!is_null($params['pre_release_hook']))
+			$xml->addChild('pre_release_hook', $params['pre_release_hook']);
+
+		if(!is_null($params['post_release_hook']))
+			$xml->addChild('post_release_hook', $params['post_release_hook']);
+		
+		return $this->_execute($repo_id, "release_servers/" . $server_id . ".xml", "PUT", $xml->asXml());
+	}
+
 
 	//
 	// Releases
