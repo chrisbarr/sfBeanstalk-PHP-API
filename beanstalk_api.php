@@ -441,6 +441,17 @@ class beanstalk_api {
 			return $this->_execute_curl($repo_id, "server_environments/" . $environment_id . ".xml");
 	}
 
+	public function create_server($repo_id, $name, $automatic = FALSE, $branch_name = '') {
+
+		$xml = new SimpleXMLElement('<server-environment></server-environment>');
+
+		$xml->addChild('name', $name);
+		$xml->addChild('automatic', $automatic);
+		if ($branch_name != '')
+			$xml->addChild('branch_name', $branch_name);
+
+		return $this->_execute_curl($repo_id, "server_environments.xml", "POST", $xml->asXml());
+	}
 
 	//
 	// Release Servers
@@ -476,6 +487,52 @@ class beanstalk_api {
 			return $this->_execute_curl($repo_id, "release_servers/" . $server_id . ".xml");
 	}
 
+	/**
+	 * Create release server
+	 *
+	 * @param array $data
+	 *
+	 */
+	public function create_release_server($data = array()) {
+
+		$defaults = array('repo_id' => '', 'name' => '', 'local_path' => '', 'remote_path' => '/', 'remote_addr' => '',
+			'protocol' => 'ftp', 'port' => 22, 'login' => '', 'password' => '', 'use_active_mode' => '', 'authenticate_by_key' => '',
+			'use_feat' => '', 'pre_release_hook' => '', 'post_release_hook' => ''
+		);
+
+		foreach ($defaults as $key => $val)
+		{
+			if ( ! is_array($data))
+			{
+				if ( ! isset($$key) OR $$key == '')
+				{
+					$$key = $val;
+				}
+			}
+			else
+			{
+				$$key = ( ! isset($data[$key])) ? $val : $data[$key];
+			}
+		}
+
+		$xml = new SimpleXMLElement('<release_server></release_server>');
+
+		$xml->addChild('name', $name);
+		$xml->addChild('local_path', $local_path);
+		$xml->addChild('remote_path', $remote_path);
+		$xml->addChild('remote_addr', $remote_addr);
+		$xml->addChild('protocol', $protocol);
+		$xml->addChild('port', $port);
+		$xml->addChild('login', $login);
+		$xml->addChild('password', $password);
+		$xml->addChild('use_active_mode', $use_active_mode);
+		$xml->addChild('authenticate_by_key', $authenticate_by_key);
+		$xml->addChild('use_feat', $use_feat);
+		$xml->addChild('pre-release-hook', $pre_release_hook);
+		$xml->addChild('post-release-hook', $post_release_hook);
+
+		return $this->_execute_curl($repo_id, "release_servers.xml", "POST", $xml->asXml());
+	}
 
 	//
 	// Releases
@@ -535,7 +592,6 @@ class beanstalk_api {
 		curl_setopt($ch, CURLOPT_USERPWD, $this->username . ':' . $this->password);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION,1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_POST, TRUE);
 
 		if(!is_null($write_data))
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $write_data);
