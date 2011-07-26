@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * PHP class for connecting to the Beanstalk API
+ *
+ * @link http://api.beanstalkapp.com/
+ */
 class beanstalk_api {
 	/**
 	 * Beanstalk account configuration
