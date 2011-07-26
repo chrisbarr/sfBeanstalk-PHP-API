@@ -35,13 +35,22 @@ class beanstalk_api {
 	 * Allows a user to update their account details by sending specific parameters
 	 *
 	 * @link http://api.beanstalkapp.com/account.html
-	 * @param string $name			required
-	 * @param string $time_zone		required
+	 * @param array $params Accepts - name, timezone
 	 * @return xml
 	 */
-	public function update_account_details($name, $time_zone) {
-		if(empty($name) || empty($time_zone))
-			return "Name and time zone required";
+	public function update_account_details($params = array()) {
+		if(count($params) == 0)
+			return "Nothing to update";
+		
+		$xml = new SimpleXMLElement("<account></account>");
+		
+		if(isset($params['name']))
+			$xml->addChild('name', $params['name']);
+		
+		if(isset($params['timezone']))
+			$xml->addChild('time-zone', $params['timezone']); // Inconsistency in API?
+		
+		return $this->_execute_curl("account.xml", NULL, "PUT", $xml->asXml());
 	}
 
 
