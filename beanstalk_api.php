@@ -679,7 +679,7 @@ class beanstalk_api {
 	 * @param integer $repo_id		required
 	 * @return xml
 	 */
-	public function find_all_sucessful_releases($repo_id) {
+	public function find_all_successful_releases($repo_id) {
 		if(empty($repo_id))
 			return "Repository ID required";
 		else
