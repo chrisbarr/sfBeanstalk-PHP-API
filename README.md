@@ -45,6 +45,8 @@ List of available function calls:
 * `delete_release_server(repo_id, server_id);`
 * `find_all_successful_releases(repo_id);`
 * `find_single_release(repo_id, release_id);`
+* `create_release(repo_id, revision_id);`
+* `retry_release(repo_id, release_id);`
 
 Example simple test file:
 

@@ -701,6 +701,47 @@ class beanstalk_api {
 			return $this->_execute_curl($repo_id, $release_id . ".xml");
 	}
 
+	/**
+	 * Create a new release - ie. deploy to a server environment
+	 *
+	 * @link http://api.beanstalkapp.com/release.html
+	 * @param integer $repo_id
+	 * @param integer $environment_id
+	 * @param integer $revision_id
+	 * @param string $comment [optional]
+	 * @param bool $deploy_from_scratch [optional]
+	 * @return xml
+	 */
+	public function create_release($repo_id, $environment_id, $revision_id, $comment = '', $deploy_from_scratch = false) {
+		if(empty($repo_id) || empty($environment_id) || empty($revision))
+			return "Repository ID, server environment ID and revision required";
+		
+		$xml = new SimpleXMLElement('<release></release>');
+		
+		$revision_xml = $xml->addChild('revision', $revision_id);
+		$revision_xml->addAttribute('type', 'integer');
+		
+		$xml->addChild('comment', $comment);
+		$xml->addChild('deploy_from_scratch', $deploy_from_scratch);
+		
+		return $this->_execute_curl($repo_id, "releases.xml?environment_id=" . $environment_id, "POST", $xml->asXml());
+	}
+
+	/**
+	 * Retry a failed release
+	 *
+	 * @link http://api.beanstalkapp.com/release.html
+	 * @param integer $repo_id
+	 * @param integer $release_id
+	 * @return xml
+	 */
+	public function retry_release($repo_id, $release_id) {
+		if(empty($repo_id) || empty($release_id))
+			return "Repository ID and release ID required";
+		
+		return $this->_execute_curl($repo_id, "releases/" . $release_id . "/retry.xml", "PUT");
+	}
+
 
 	//
 	// Utility functions
