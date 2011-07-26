@@ -42,6 +42,7 @@ List of available function calls:
 * `find_single_release_server(repo_id, server_id);`
 * `create_release_server(repo_id, environment_id, name, local_path, remote_path, remote_addr, protocol, port, login, password);`
 * `update_release_server(repo_id, server_id, params);`
+* `delete_release_server(repo_id, server_id);`
 * `find_all_successful_releases(repo_id);`
 * `find_single_release(repo_id, release_id);`
 

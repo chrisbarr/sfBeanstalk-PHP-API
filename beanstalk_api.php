@@ -595,7 +595,7 @@ class beanstalk_api {
 	/**
 	 * Update a release server
 	 *
-	 * @link 
+	 * @link http://api.beanstalkapp.com/release_server.html
 	 * @param integer $repo_id
 	 * @param integer $server_id
 	 * @param array $params Accepts - name, local_path, remote_path, remote_addr, protocol, port, login, password, use_active_mode, authenticate_by_key, use_feat, pre_release_hook, post_release_hook
@@ -650,6 +650,21 @@ class beanstalk_api {
 			$xml->addChild('post_release_hook', $params['post_release_hook']);
 		
 		return $this->_execute($repo_id, "release_servers/" . $server_id . ".xml", "PUT", $xml->asXml());
+	}
+
+	/**
+	 * Delete a release server
+	 *
+	 * @link http://api.beanstalkapp.com/release_server.html
+	 * @param integer $repo_id
+	 * @param integer $server_id
+	 * @return xml
+	 */
+	public function delete_release_server($repo_id, $server_id) {
+		if(empty($repo_id) || empty($server_id))
+			return "Repository ID and release server ID required";
+		
+		return $this->_execute_curl($repo_id, "release_servers/" . $server_id . ".xml", "DELETE");
 	}
 
 
