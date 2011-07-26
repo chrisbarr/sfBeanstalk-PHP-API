@@ -291,10 +291,11 @@ class beanstalk_api {
 	 * Returns Beanstalk account changeset list
 	 *
 	 * @link http://api.beanstalkapp.com/changeset.html
+	 * @param integer $page [optional] 15 results per page
 	 * @return xml
 	 */
-	public function find_all_changesets() {
-		return $this->_execute_curl("changesets.xml");
+	public function find_all_changesets($page = 1) {
+		return $this->_execute_curl("changesets.xml?page=" . $page);
 	}
 
 	/**
