@@ -436,6 +436,31 @@ class beanstalk_api {
 			return $this->_execute_curl($repo_id, "server_environments/" . $environment_id . ".xml");
 	}
 
+	/**
+	 * Create a new server environment
+	 *
+	 * @link http://api.beanstalkapp.com/server_environment.html
+	 * @param integer $repo_id
+	 * @param string $name
+	 * @param bool $automatic
+	 * @param string $branch_name [optional] Git only
+	 * @return xml
+	 */
+	public function create_server_environment($repo_id, $name, $automatic, $branch_name = NULL) {
+		if(empty($repo_id) || empty($name) || ($automatic !== false && $automatic !== true))
+			return "Repository ID, name and deploy automatically required";
+		
+		$xml = new SimpleXMLElement('<server-environment></server-environment>');
+		
+		$xml->addChild('name', $name);
+		$xml->addChild('automatic', $automatic);
+		
+		if(!is_null($branch_name))
+			$xml->addChild('branch_name', $branch_name);
+		
+		return $this->_execute_curl($repo_id, "server_environments.xml", "POST", $xml->asXml());
+	}
+
 
 	//
 	// Release Servers

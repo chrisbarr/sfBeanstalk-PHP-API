@@ -15,6 +15,7 @@ Before using any of the following methods, you must first declare the following:
 List of available function calls:
 
 * `get_account_details();`
+* `update_account_details();`
 * `find_all_plans();`
 * `find_all_users();`
 * `find_single_user(user_id);`
@@ -35,6 +36,7 @@ List of available function calls:
 * `create_comment(repo_id, revision_id, body, file_path, line_number);`
 * `find_all_server_environments(repo_id);`
 * `find_single_server_environment(repo_id, environment_id);`
+* `create_server_environment(repo_id, name, automatic)`
 * `find_all_release_servers(repo_id, environment_id);`
 * `find_single_release_server(repo_id, server_id);`
 * `find_all_successful_releases(repo_id);`
