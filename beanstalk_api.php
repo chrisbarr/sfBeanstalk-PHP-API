@@ -526,6 +526,72 @@ class beanstalk_api {
 			return $this->_execute_curl($repo_id, "release_servers/" . $server_id . ".xml");
 	}
 
+	/**
+	 * Create a release server
+	 *
+	 * @link http://api.beanstalkapp.com/release_server.html
+	 * @param integer $repo_id
+	 * @param integer $environment_id
+	 * @param string $name
+	 * @param string $local_path
+	 * @param string $remote_path
+	 * @param string $remote_addr
+	 * @param string $protocol [optional] Accepts - ftp, sftp
+	 * @param integer $port [optional]
+	 * @param string $login
+	 * @param string $password
+	 * @param bool $use_active_mode [optional]
+	 * @param bool $authenticate_by_key [optional]
+	 * @param bool $use_feat [optional] Defaults to true
+	 * @param string $pre_release_hook [optional]
+	 * @param string $post_release_hook [optional]
+	 * @return xml
+	 */
+	public function create_release_server($repo_id, $environment_id, $name, $local_path, $remote_path, $remote_addr, $protocol = 'ftp', $port = 21, $login, $password, $use_active_mode = NULL, $authenticate_by_key = NULL, $use_feat = true, $pre_release_hook = NULL, $post_release_hook = NULL) {
+		if(empty($repo_id) || empty($environment_id) || empty($name) || empty($local_path) || empty($remote_path) || empty($remote_addr) || empty($protocol) || empty($port) || empty($login))
+			return "Some required fields missing";
+		
+		$xml = new SimpleXMLElement('<release_server></release_server>');
+		
+		$xml->addChild('name', $name);
+		$xml->addChild('local_path', $local_path);
+		$xml->addChild('remote_path', $remote_path);
+		$xml->addChild('remote_addr', $remote_addr);
+		
+		$xml->addChild('login', $login);
+		
+		if($protocol == 'sftp') {
+			$xml->addChild('protocol', 'sftp');
+			
+			if($authenticate_by_key == true) {
+				$xml->addChild('authenticate_by_key', true);
+			}
+			else {
+				$xml->addChild('password', $password);
+			}
+		}
+		else {
+			$xml->addChild('protocol', 'ftp');
+			$xml->addChild('password', $password);
+		}
+		
+		$xml->addChild('port', $port);
+		
+		if(!is_null($use_active_mode))
+			$xml->addChild('use_active_mode', $use_active_mode);
+		
+		if(!is_null($use_feat))
+			$xml->addChild('use_feat', $use_feat); // True by default
+		
+		if(!is_null($pre_release_hook))
+			$xml->addChild('pre_release_hook', $pre_release_hook);
+		
+		if(!is_null($post_release_hook))
+			$xml->addChild('post_release_hook', $post_release_hook);
+		
+		return $this->_execute_curl($repo_id, "release_servers.xml?environment_id=" . $environment_id, "POST", $xml->asXml());
+	}
+
 
 	//
 	// Releases
