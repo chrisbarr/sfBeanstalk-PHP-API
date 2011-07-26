@@ -515,6 +515,7 @@ class beanstalk_api {
 		curl_setopt($ch, CURLOPT_USERPWD, $this->username . ':' . $this->password);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION,1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		
 		if(!is_null($write_data))
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $write_data);
@@ -522,6 +523,12 @@ class beanstalk_api {
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $curl_verb);
 
 		$data = curl_exec($ch);
+		
+		if(curl_errno($ch))
+			throw new Exception("cURL request failed - " . curl_errno($ch) . " : " . curl_error($ch));
+		
+		//TODO Check response code using curl_getinfo()
+		
 		curl_close($ch);
 
 		return $data;
