@@ -251,7 +251,7 @@ class beanstalk_api {
 	}
 
 	/**
-	 * Update a public key
+	 * Update a public key - can only update own keys unless admin
 	 *
 	 * @link http://api.beanstalkapp.com/public_key.html
 	 * @param integer $key_id
@@ -274,6 +274,20 @@ class beanstalk_api {
 			$xml->addChild('name', $params['name']);
 		
 		return $this->_execute_curl("public_keys", $key_id . ".xml", "PUT", $xml->asXml());
+	}
+
+	/**
+	 * Delete a public key - can only delete own keys unless admin
+	 *
+	 * @link http://api.beanstalkapp.com/public_key.html
+	 * @param integer $key_id
+	 * @return xml
+	 */
+	public function delete_public_key($key_id) {
+		if(empty($key_id))
+			return "Public key ID required";
+		
+		return $this->_execute_curl("public_keys", $key_id . ".xml", "DELETE");
 	}
 
 

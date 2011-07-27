@@ -26,7 +26,8 @@ List of available function calls:
 * `find_all_public_keys();`
 * `find_single_public_key(key_id);`
 * `create_public_key(content);`
-* `update_public_key(key_id, params)`
+* `update_public_key(key_id, params);`
+* `delete_public_key(key_id);`
 * `find_all_repositories();`
 * `find_single_repository(repo_id);`
 * `create_repository(name, type_id, title);`
