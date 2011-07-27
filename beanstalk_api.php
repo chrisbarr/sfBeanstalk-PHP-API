@@ -250,6 +250,32 @@ class beanstalk_api {
 		return $this->_execute_curl("public_keys.xml", NULL, "POST", $xml->asXml());
 	}
 
+	/**
+	 * Update a public key
+	 *
+	 * @link http://api.beanstalkapp.com/public_key.html
+	 * @param integer $key_id
+	 * @param array $params Accepts - content, name
+	 * @return xml
+	 */
+	public function update_public_key($key_id, $params = array()) {
+		if(empty($key_id))
+			return "Public key ID required";
+		
+		if(count($params) == 0)
+			return "Nothing to update";
+		
+		$xml = new SimpleXMLElement('<public_key></public_key>');
+		
+		if(!is_null($params['content']))
+			$xml->addChild('content', $params['content']);
+
+		if(!is_null($params['name']))
+			$xml->addChild('name', $params['name']);
+		
+		return $this->_execute_curl("public_keys", $key_id . ".xml", "PUT", $xml->asXml());
+	}
+
 
 	//
 	// Repositories
