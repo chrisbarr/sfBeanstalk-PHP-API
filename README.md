@@ -24,6 +24,7 @@ List of available function calls:
 * `update_user(user_id, params);`
 * `delete_user(user_id);`
 * `find_all_public_keys();`
+* `find_single_public_key(key_id);`
 * `find_all_repositories();`
 * `find_single_repository(repo_id);`
 * `create_repository(name, type_id, title);`

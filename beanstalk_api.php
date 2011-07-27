@@ -210,6 +210,20 @@ class beanstalk_api {
 			return $this->_execute_curl("public_keys.xml");
 	}
 
+	/**
+	 * Return a single public key
+	 *
+	 * @link http://api.beanstalkapp.com/public_key.html
+	 * @param integer $key_id
+	 * @return xml
+	 */
+	public function find_single_public_key($key_id) {
+		if(empty($key_id))
+			return "Public key ID required";
+		
+		return $this->_execute_curl("public_keys", $key_id . ".xml");
+	}
+
 
 	//
 	// Repositories
