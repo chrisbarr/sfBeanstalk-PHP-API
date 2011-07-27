@@ -36,7 +36,7 @@ List of available function calls:
 * `create_user_permissions(user_id, repo_id, read, write, full_deployments_access);`
 * `delete_user_permissions(user_id);`
 * `find_all_changesets();`
-* `find_single_repository_changeset(repo_id);`
+* `find_single_repository_changesets(repo_id);`
 * `find_single_changeset(repo_id, revision);`
 * `find_all_comments(repo_id);`
 * `find_all_changeset_comments(repo_id, revision);`

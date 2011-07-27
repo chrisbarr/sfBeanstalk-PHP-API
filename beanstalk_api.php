@@ -505,14 +505,14 @@ class beanstalk_api {
 	}
 
 	/**
-	 * Returns a Beanstalk repository changeset based on a specific repository ID
+	 * Returns a Beanstalk repository changesets based on a specific repository ID
 	 *
 	 * @link http://api.beanstalkapp.com/changeset.html
 	 * @param integer $repo_id		required
 	 * @param integer $page [optional] UNDOCUMENTED
 	 * @return SimpleXMLElement
 	 */
-	public function find_single_repository_changeset($repo_id, $page = 1) {
+	public function find_single_repository_changesets($repo_id, $page = 1) {
 		if(empty($repo_id))
 			return "Repository ID required";
 		else
