@@ -224,6 +224,32 @@ class beanstalk_api {
 		return $this->_execute_curl("public_keys", $key_id . ".xml");
 	}
 
+	/**
+	 * Create a new public key - creates for current user unless specified (must be admin)
+	 *
+	 * @link http://api.beanstalkapp.com/public_key.html
+	 * @param string $content
+	 * @param string $name [optional]
+	 * @param integer $user_id [optional] Defaults to current user
+	 * @return xml
+	 */
+	public function create_public_key($content, $name = NULL, $user_id = NULL) {
+		if(empty($content))
+			return "Key content required";
+		
+		$xml = new SimpleXMLElement('<public_key></public_key>');
+		
+		$xml->addChild('content', $content);
+		
+		if(!is_null($name))
+			$xml->addChild('name', $name);
+		
+		if(!is_null($user_id))
+			$xml->addChild('user_id', $user_id);
+		
+		return $this->_execute_curl("public_keys.xml", NULL, "POST", $xml->asXml());
+	}
+
 
 	//
 	// Repositories
