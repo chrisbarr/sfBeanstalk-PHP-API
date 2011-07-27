@@ -383,6 +383,92 @@ class beanstalk_api {
 
 
 	//
+	// User Permissions
+	//
+
+	/**
+	 * Find permissions for a user
+	 *
+	 * @link http://api.beanstalkapp.com/permissions.html
+	 * @param integer $user_id
+	 * @return xml
+	 */
+	public function find_user_permissions($user_id) {
+		if(empty($user_id))
+			return "User ID required";
+		
+		return $this->_execute_curl("permissions", $user_id . ".xml");
+	}
+
+	/**
+	 * Create permissions for a user for a repository - overwrites existing
+	 *
+	 * @link http://api.beanstalkapp.com/permissions.html
+	 * @param integer $user_id
+	 * @param integer $repo_id
+	 * @param bool $read [optional]
+	 * @param bool $write [optional]
+	 * @param bool $full_deployments_access [optional] Gives full deployment access to a repository
+	 * @param integer $server_environment_id [optional] Give deployment access only to a specific server environment
+	 * @return xml
+	 */
+	public function create_user_permissions($user_id, $repo_id, $read = false, $write = false, $full_deployments_access = false, $server_environment_id = NULL) {
+		if(empty($user_id) || empty($repo_id))
+			return "Some required fields missing";
+		
+		$xml = new SimpleXMLElement('<permission></permission>');
+		
+		$user_xml = $xml->addChild('user-id', $user_id);
+		$user_xml->addAttribute('type', 'integer');
+		
+		$repo_xml = $xml->addChild('repository-id', $repo_id);
+		$repo_xml->addAttribute('type', 'integer');
+		
+		if($read === true)
+			$read_xml = $xml->addChild('read', 'true');
+		else
+			$read_xml = $xml->addChild('read', 'false');
+		
+		$read_xml->addAttribute('type', 'boolean');
+		
+		if($write === true)
+			$write_xml = $xml->addChild('write', 'true');
+		else
+			$write_xml = $xml->addChild('write', 'false');
+		
+		$write_xml->addAttribute('type', 'boolean');
+		
+		if($full_deployments_access === true)
+			$full_deploy_xml = $xml->addChild('full_deployments_access', 'true');
+		else
+			$full_deploy_xml = $xml->addChild('full_deployments_access', 'false');
+		
+		$full_deploy_xml->addAttribute('type', 'boolean');
+		
+		if(!is_null($server_environment_id)) {
+			$environment_xml = $xml->addChild('server-environment-id', $server_environment_id);
+			$environment_xml->addAttribute('type', 'integer');
+		}
+		
+		return $this->_execute_curl("permissions.xml", NULL, "POST", $xml->asXml());
+	}
+
+	/**
+	 * Strip a user of a set of permissions for a repository
+	 *
+	 * @link http://api.beanstalkapp.com/permissions.html
+	 * @param integer $permission_id
+	 * @return xml
+	 */
+	public function delete_user_permissions($permission_id) {
+		if(empty($permission_id))
+			return "Permission ID required";
+		
+		return $this->_execute_curl("permissions", $permission_id . ".xml", "DELETE");
+	}
+
+
+	//
 	// Changesets
 	//
 

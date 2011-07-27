@@ -32,6 +32,9 @@ List of available function calls:
 * `find_single_repository(repo_id);`
 * `create_repository(name, type_id, title);`
 * `update_repository(repo_id, params);`
+* `find_user_permissions(user_id);`
+* `create_user_permissions(user_id, repo_id, read, write, full_deployments_access);`
+* `delete_user_permissions(user_id);`
 * `find_all_changesets();`
 * `find_single_repository_changeset(repo_id);`
 * `find_single_changeset(repo_id, revision);`
