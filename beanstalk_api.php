@@ -149,8 +149,8 @@ class beanstalk_api {
 
 		$xml->addChild('login', $login);
 		$xml->addChild('email', $email);
-		$xml->addChild('first_name', $first_name);
-		$xml->addChild('last_name', $last_name);
+		$xml->addChild('first-name', $first_name);
+		$xml->addChild('last-name', $last_name);
 		$xml->addChild('password', $password);
 		$xml->addChild('admin', $admin); // Should change to optional?
 
@@ -181,10 +181,10 @@ class beanstalk_api {
 			$xml->addChild('email', $params['email']);
 
 		if(isset($params['first_name']))
-			$xml->addChild('first_name', $params['first_name']);
+			$xml->addChild('first-name', $params['first_name']);
 
 		if(isset($params['last_name']))
-			$xml->addChild('last_name', $params['last_name']);
+			$xml->addChild('last-name', $params['last_name']);
 
 		if(isset($params['password']))
 			$xml->addChild('password', $params['password']);
@@ -258,7 +258,7 @@ class beanstalk_api {
 		if(empty($content))
 			return "Key content required";
 		
-		$xml = new SimpleXMLElement('<public_key></public_key>');
+		$xml = new SimpleXMLElement('<public-key></public-key>');
 		
 		$xml->addChild('content', $content);
 		
@@ -266,7 +266,7 @@ class beanstalk_api {
 			$xml->addChild('name', $name);
 		
 		if(!is_null($user_id))
-			$xml->addChild('user_id', $user_id);
+			$xml->addChild('user-id', $user_id);
 		
 		return $this->_execute_curl("public_keys.xml", NULL, "POST", $xml->asXml());
 	}
@@ -286,7 +286,7 @@ class beanstalk_api {
 		if(count($params) == 0)
 			return "Nothing to update";
 		
-		$xml = new SimpleXMLElement('<public_key></public_key>');
+		$xml = new SimpleXMLElement('<public-key></public-key>');
 		
 		if(!is_null($params['content']))
 			$xml->addChild('content', $params['content']);
@@ -360,7 +360,7 @@ class beanstalk_api {
 		$xml->addChild('name', $name);
 
 		if(!is_null($type_id))
-			$xml->addChild('type_id', $type_id);
+			$xml->addChild('type-id', $type_id);
 
 		$xml->addChild('title', $title);
 
@@ -368,7 +368,7 @@ class beanstalk_api {
 			$xml->addChild('create_structure', $create_structure);
 
 		if(!is_null($color_label))
-			$xml->addChild('color_label', "label-" . $color_label);
+			$xml->addChild('color-label', "label-" . $color_label);
 
 		return $this->_execute_curl("repositories.xml", NULL, "POST", $xml->asXml());
 	}
@@ -460,9 +460,9 @@ class beanstalk_api {
 		$write_xml->addAttribute('type', 'boolean');
 		
 		if($full_deployments_access === true)
-			$full_deploy_xml = $xml->addChild('full_deployments_access', 'true');
+			$full_deploy_xml = $xml->addChild('full-deployments-access', 'true');
 		else
-			$full_deploy_xml = $xml->addChild('full_deployments_access', 'false');
+			$full_deploy_xml = $xml->addChild('full-deployments-access', 'false');
 		
 		$full_deploy_xml->addAttribute('type', 'boolean');
 		
@@ -605,8 +605,8 @@ class beanstalk_api {
 		$revision_xml->addAttribute('type', 'integer');
 
 		$xml->addChild('body', $body);
-		$xml->addChild('file_path', $file_path);
-		$xml->addChild('line_number', $line_number); // Should this have type attribute set as well?
+		$xml->addChild('file-path', $file_path);
+		$xml->addChild('line-number', $line_number); // Should this have type attribute set as well?
 
 		return $this->_execute_curl($repo_id, "comments.xml", "POST", $xml->asXml());
 	}
@@ -665,7 +665,7 @@ class beanstalk_api {
 		$xml->addChild('automatic', $automatic);
 		
 		if(!is_null($branch_name))
-			$xml->addChild('branch_name', $branch_name);
+			$xml->addChild('branch-name', $branch_name);
 		
 		return $this->_execute_curl($repo_id, "server_environments.xml", "POST", $xml->asXml());
 	}
@@ -695,7 +695,7 @@ class beanstalk_api {
 			$xml->addChild('automatic', $params['automatic']);
 		
 		if(isset($params['branch_name']))
-			$xml->addChild('branch_name', $params['branch_name']);
+			$xml->addChild('branch-name', $params['branch_name']);
 		
 		return $this->_execute_curl($repo_id, "server_environments/" . $environment_id . ".xml", "PUT", $xml->asXml());
 	}
@@ -760,12 +760,12 @@ class beanstalk_api {
 		if(empty($repo_id) || empty($environment_id) || empty($name) || empty($local_path) || empty($remote_path) || empty($remote_addr) || empty($protocol) || empty($port) || empty($login))
 			return "Some required fields missing";
 		
-		$xml = new SimpleXMLElement('<release_server></release_server>');
+		$xml = new SimpleXMLElement('<release-server></release-server>');
 		
 		$xml->addChild('name', $name);
-		$xml->addChild('local_path', $local_path);
-		$xml->addChild('remote_path', $remote_path);
-		$xml->addChild('remote_addr', $remote_addr);
+		$xml->addChild('local-path', $local_path);
+		$xml->addChild('remote-path', $remote_path);
+		$xml->addChild('remote-addr', $remote_addr);
 		
 		$xml->addChild('login', $login);
 		
@@ -787,16 +787,16 @@ class beanstalk_api {
 		$xml->addChild('port', $port);
 		
 		if(!is_null($use_active_mode))
-			$xml->addChild('use_active_mode', $use_active_mode);
+			$xml->addChild('use-active-mode', $use_active_mode);
 		
 		if(!is_null($use_feat))
-			$xml->addChild('use_feat', $use_feat); // True by default
+			$xml->addChild('use-feat', $use_feat); // True by default
 		
 		if(!is_null($pre_release_hook))
-			$xml->addChild('pre_release_hook', $pre_release_hook);
+			$xml->addChild('pre-release-hook', $pre_release_hook);
 		
 		if(!is_null($post_release_hook))
-			$xml->addChild('post_release_hook', $post_release_hook);
+			$xml->addChild('post-release-hook', $post_release_hook);
 		
 		return $this->_execute_curl($repo_id, "release_servers.xml?environment_id=" . $environment_id, "POST", $xml->asXml());
 	}
@@ -817,19 +817,19 @@ class beanstalk_api {
 		if(count($params) == 0)
 			return "Nothing to update";
 		
-		$xml = new SimpleXMLElement('<release_server></release_server>');
+		$xml = new SimpleXMLElement('<release-server></release-server>');
 		
 		if(!is_null($params['name']))
 			$xml->addChild('name', $params['name']);
 		
 		if(!is_null($params['local_path']))
-			$xml->addChild('local_path', $params['local_path']);
+			$xml->addChild('local-path', $params['local_path']);
 		
 		if(!is_null($params['remote_path']))
-			$xml->addChild('remote_path', $params['remote_path']);
+			$xml->addChild('remote-path', $params['remote_path']);
 		
 		if(!is_null($params['remote_addr']))
-			$xml->addChild('remote_addr', $params['remote_addr']);
+			$xml->addChild('remote-addr', $params['remote_addr']);
 		
 		if(!is_null($params['protocol']))
 			$xml->addChild('protocol', $params['protocol']);
@@ -844,19 +844,19 @@ class beanstalk_api {
 			$xml->addChild('password', $params['password']);
 
 		if(!is_null($params['use_active_mode']))
-			$xml->addChild('use_active_mode', $params['use_active_mode']);
+			$xml->addChild('use-active-mode', $params['use_active_mode']);
 
 		if(!is_null($params['authenticate_by_key']))
-			$xml->addChild('authenticate_by_key', $params['authenticate_by_key']);
+			$xml->addChild('authenticate-by-key', $params['authenticate_by_key']);
 
 		if(!is_null($params['use_feat']))
-			$xml->addChild('use_feat', $params['use_feat']);
+			$xml->addChild('use-feat', $params['use_feat']);
 
 		if(!is_null($params['pre_release_hook']))
-			$xml->addChild('pre_release_hook', $params['pre_release_hook']);
+			$xml->addChild('pre-release-hook', $params['pre_release_hook']);
 
 		if(!is_null($params['post_release_hook']))
-			$xml->addChild('post_release_hook', $params['post_release_hook']);
+			$xml->addChild('post-release-hook', $params['post_release_hook']);
 		
 		return $this->_execute($repo_id, "release_servers/" . $server_id . ".xml", "PUT", $xml->asXml());
 	}
@@ -932,7 +932,7 @@ class beanstalk_api {
 		$revision_xml->addAttribute('type', 'integer');
 		
 		$xml->addChild('comment', $comment);
-		$xml->addChild('deploy_from_scratch', $deploy_from_scratch);
+		$xml->addChild('deploy-from-scratch', $deploy_from_scratch);
 		
 		return $this->_execute_curl($repo_id, "releases.xml?environment_id=" . $environment_id, "POST", $xml->asXml());
 	}
