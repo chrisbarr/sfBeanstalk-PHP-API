@@ -46,7 +46,7 @@ class beanstalk_api {
 	 * Returns Beanstalk account details.
 	 *
 	 * @link http://api.beanstalkapp.com/account.html
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function get_account_details() {
 		return $this->_execute_curl("account.xml");
@@ -57,7 +57,7 @@ class beanstalk_api {
 	 *
 	 * @link http://api.beanstalkapp.com/account.html
 	 * @param array $params Accepts - name, timezone
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function update_account_details($params = array()) {
 		if(count($params) == 0)
@@ -83,7 +83,7 @@ class beanstalk_api {
 	 * Returns Beanstalk account plans
 	 *
 	 * @link http://api.beanstalkapp.com/plan.html
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_all_plans() {
 		return $this->_execute_curl("plans.xml");
@@ -98,7 +98,7 @@ class beanstalk_api {
 	 * Returns Beanstalk account user list.
 	 *
 	 * @link http://api.beanstalkapp.com/user.html
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_all_users() {
 		return $this->_execute_curl("users.xml");
@@ -109,7 +109,7 @@ class beanstalk_api {
 	 *
 	 * @link http://api.beanstalkapp.com/user.html
 	 * @param integer $user_id		required
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_single_user($user_id) {
 		if(empty($user_id))
@@ -122,7 +122,7 @@ class beanstalk_api {
 	 * Returns Beanstalk user currently being used to access the API
 	 *
 	 * @link http://api.beanstalkapp.com/user.html
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_current_user() {
 		return $this->_execute_curl("users", "current.xml");
@@ -139,7 +139,7 @@ class beanstalk_api {
 	 * @param string $password
 	 * @param int $admin [optional]
 	 * @param string $timezone [optional]
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function create_user($login, $email, $first_name, $last_name, $password, $admin = 0, $timezone = NULL) {
 		if(empty($login) || empty($email) || empty($first_name) || empty($last_name) || empty($password))
@@ -166,7 +166,7 @@ class beanstalk_api {
 	 * @link http://api.beanstalkapp.com/user.html
 	 * @param integer $user_id
 	 * @param array $params Accepts - email, first_name, last_name, password, admin, timezone
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function update_user($user_id, $params = array()) {
 		if(empty($user_id))
@@ -203,7 +203,7 @@ class beanstalk_api {
 	 *
 	 * @link http://api.beanstalkapp.com/user.html
 	 * @param integer $user_id
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function delete_user($user_id) {
 		if(empty($user_id))
@@ -222,7 +222,7 @@ class beanstalk_api {
 	 *
 	 * @link http://api.beanstalkapp.com/public_key.html
 	 * @param integer $user_id [optional]
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_all_public_keys($user_id = NULL) {
 		if(!is_null($user_id))
@@ -236,7 +236,7 @@ class beanstalk_api {
 	 *
 	 * @link http://api.beanstalkapp.com/public_key.html
 	 * @param integer $key_id
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_single_public_key($key_id) {
 		if(empty($key_id))
@@ -252,7 +252,7 @@ class beanstalk_api {
 	 * @param string $content
 	 * @param string $name [optional]
 	 * @param integer $user_id [optional] Defaults to current user
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function create_public_key($content, $name = NULL, $user_id = NULL) {
 		if(empty($content))
@@ -277,7 +277,7 @@ class beanstalk_api {
 	 * @link http://api.beanstalkapp.com/public_key.html
 	 * @param integer $key_id
 	 * @param array $params Accepts - content, name
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function update_public_key($key_id, $params = array()) {
 		if(empty($key_id))
@@ -302,7 +302,7 @@ class beanstalk_api {
 	 *
 	 * @link http://api.beanstalkapp.com/public_key.html
 	 * @param integer $key_id
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function delete_public_key($key_id) {
 		if(empty($key_id))
@@ -320,7 +320,7 @@ class beanstalk_api {
 	 * Returns Beanstalk account repository list
 	 *
 	 * @link http://api.beanstalkapp.com/repository.html
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_all_repositories() {
 		return $this->_execute_curl("repositories.xml");
@@ -331,7 +331,7 @@ class beanstalk_api {
 	 *
 	 * @link http://api.beanstalkapp.com/repository.html
 	 * @param integer $repo_id		required
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_single_repository($repo_id) {
 		if(empty($repo_id))
@@ -349,7 +349,7 @@ class beanstalk_api {
 	 * @param string $title
 	 * @param bool $create_structure [optional]
 	 * @param string $color_label [optional] Accepts - red, orange, yellow, green, blue, pink, grey
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function create_repository($name, $type_id = "subversion", $title, $create_structure = true, $color_label = "grey") {
 		if(empty($name) || empty($title))
@@ -379,7 +379,7 @@ class beanstalk_api {
 	 * @link http://api.beanstalkapp.com/repository.html
 	 * @param integer $repo_id
 	 * @param array $params Accepts - name, title, color_label (red, orange, yellow, green, blue, pink, grey)
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function update_repository($repo_id, $params = array()) {
 		if(empty($repo_id))
@@ -412,7 +412,7 @@ class beanstalk_api {
 	 *
 	 * @link http://api.beanstalkapp.com/permissions.html
 	 * @param integer $user_id
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_user_permissions($user_id) {
 		if(empty($user_id))
@@ -431,7 +431,7 @@ class beanstalk_api {
 	 * @param bool $write [optional]
 	 * @param bool $full_deployments_access [optional] Gives full deployment access to a repository
 	 * @param integer $server_environment_id [optional] Give deployment access only to a specific server environment
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function create_user_permissions($user_id, $repo_id, $read = false, $write = false, $full_deployments_access = false, $server_environment_id = NULL) {
 		if(empty($user_id) || empty($repo_id))
@@ -479,7 +479,7 @@ class beanstalk_api {
 	 *
 	 * @link http://api.beanstalkapp.com/permissions.html
 	 * @param integer $permission_id
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function delete_user_permissions($permission_id) {
 		if(empty($permission_id))
@@ -498,7 +498,7 @@ class beanstalk_api {
 	 *
 	 * @link http://api.beanstalkapp.com/changeset.html
 	 * @param integer $page [optional] 15 results per page
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_all_changesets($page = 1) {
 		return $this->_execute_curl("changesets.xml?page=" . $page);
@@ -510,7 +510,7 @@ class beanstalk_api {
 	 * @link http://api.beanstalkapp.com/changeset.html
 	 * @param integer $repo_id		required
 	 * @param integer $page [optional] UNDOCUMENTED
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_single_repository_changeset($repo_id, $page = 1) {
 		if(empty($repo_id))
@@ -525,7 +525,7 @@ class beanstalk_api {
 	 * @link http://api.beanstalkapp.com/changeset.html
 	 * @param integer $repo_id		required
 	 * @param integer $revision		required
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_single_changeset($repo_id, $revision) {
 		if(empty($repo_id) || empty($revision))
@@ -545,7 +545,7 @@ class beanstalk_api {
 	* @link http://api.beanstalkapp.com/comment.html
 	* @param integer $repo_id		required
 	* @param integer $page [optional] 15 results per page
-	* @return xml
+	* @return SimpleXMLElement
 	*/
 	public function find_all_comments($repo_id, $page = 1) {
 		if(empty($repo_id))
@@ -560,7 +560,7 @@ class beanstalk_api {
 	 * @link http://api.beanstalkapp.com/comment.html
 	 * @param integer $repo_id		required
 	 * @param integer $revision		required
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_all_changeset_comments($repo_id, $revision) {
 		if(empty($repo_id) || empty($revision))
@@ -575,7 +575,7 @@ class beanstalk_api {
 	 * @link http://api.beanstalkapp.com/comment.html
 	 * @param integer $repo_id		required
 	 * @param integer $revision		required
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_single_comment($repo_id, $comment_id) {
 		if(empty($repo_id) || empty($comment_id))
@@ -593,7 +593,7 @@ class beanstalk_api {
 	 * @param string $body
 	 * @param string $file_path
 	 * @param integer $line_number
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function create_comment($repo_id, $revision_id, $body, $file_path, $line_number) {
 		if(empty($repo_id) || empty($revision_id) || empty($body) || empty($file_path) || empty($line_number))
@@ -621,7 +621,7 @@ class beanstalk_api {
 	 *
 	 * @link http://api.beanstalkapp.com/server_environment.html
 	 * @param integer $repo_id		required
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_all_server_environments($repo_id) {
 		if(empty($repo_id))
@@ -636,7 +636,7 @@ class beanstalk_api {
 	 * @link http://api.beanstalkapp.com/server_environment.html
 	 * @param integer $repo_id		required
 	 * @param integer $environment_id	required
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_single_server_environment($repo_id, $environment_id) {
 		if(empty($repo_id) || empty($environment_id))
@@ -653,7 +653,7 @@ class beanstalk_api {
 	 * @param string $name
 	 * @param bool $automatic [optional]
 	 * @param string $branch_name [optional] Git only
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function create_server_environment($repo_id, $name, $automatic = false, $branch_name = NULL) {
 		if(empty($repo_id) || empty($name) || ($automatic !== false && $automatic !== true))
@@ -677,7 +677,7 @@ class beanstalk_api {
 	 * @param integer $repo_id
 	 * @param integer $environment_id
 	 * @param array $params Accepts - name, automatic, branch_name
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function update_server_environment($repo_id, $environment_id, $params = array()) {
 		if(empty($repo_id) || empty($environment_id))
@@ -711,7 +711,7 @@ class beanstalk_api {
 	 * @link http://api.beanstalkapp.com/release_server.html
 	 * @param integer $repo_id		required
 	 * @param integer $environment_id	required
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	function find_all_release_servers($repo_id, $environment_id) {
 		if(empty($repo_id) || empty($environment_id))
@@ -726,7 +726,7 @@ class beanstalk_api {
 	 * @link http://api.beanstalkapp.com/release_server.html
 	 * @param integer $repo_id		required
 	 * @param integer $server_id		required
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_single_release_server($repo_id, $server_id) {
 		if(empty($repo_id) || empty($server_id))
@@ -754,7 +754,7 @@ class beanstalk_api {
 	 * @param bool $use_feat [optional] Defaults to true
 	 * @param string $pre_release_hook [optional]
 	 * @param string $post_release_hook [optional]
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function create_release_server($repo_id, $environment_id, $name, $local_path, $remote_path, $remote_addr, $protocol = 'ftp', $port = 21, $login, $password, $use_active_mode = NULL, $authenticate_by_key = NULL, $use_feat = true, $pre_release_hook = NULL, $post_release_hook = NULL) {
 		if(empty($repo_id) || empty($environment_id) || empty($name) || empty($local_path) || empty($remote_path) || empty($remote_addr) || empty($protocol) || empty($port) || empty($login))
@@ -808,7 +808,7 @@ class beanstalk_api {
 	 * @param integer $repo_id
 	 * @param integer $server_id
 	 * @param array $params Accepts - name, local_path, remote_path, remote_addr, protocol, port, login, password, use_active_mode, authenticate_by_key, use_feat, pre_release_hook, post_release_hook
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function update_release_server($repo_id, $server_id, $params = array()) {
 		if(empty($repo_id) || empty($server_id))
@@ -867,7 +867,7 @@ class beanstalk_api {
 	 * @link http://api.beanstalkapp.com/release_server.html
 	 * @param integer $repo_id
 	 * @param integer $server_id
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function delete_release_server($repo_id, $server_id) {
 		if(empty($repo_id) || empty($server_id))
@@ -887,7 +887,7 @@ class beanstalk_api {
 	 * @link http://api.beanstalkapp.com/release.html
 	 * @param integer $repo_id		required
 	 * @param integer $page [optional] 20 results per page
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_all_releases($repo_id, $page = 1) {
 		if(empty($repo_id))
@@ -902,7 +902,7 @@ class beanstalk_api {
 	 * @link http://api.beanstalkapp.com/release.html
 	 * @param integer $repo_id		required
 	 * @param integer $release_id		required
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function find_single_release($repo_id, $release_id) {
 		if(empty($repo_id) || empty($release_id))
@@ -920,7 +920,7 @@ class beanstalk_api {
 	 * @param integer $revision_id
 	 * @param string $comment [optional]
 	 * @param bool $deploy_from_scratch [optional]
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function create_release($repo_id, $environment_id, $revision_id, $comment = '', $deploy_from_scratch = false) {
 		if(empty($repo_id) || empty($environment_id) || empty($revision))
@@ -943,7 +943,7 @@ class beanstalk_api {
 	 * @link http://api.beanstalkapp.com/release.html
 	 * @param integer $repo_id
 	 * @param integer $release_id
-	 * @return xml
+	 * @return SimpleXMLElement
 	 */
 	public function retry_release($repo_id, $release_id) {
 		if(empty($repo_id) || empty($release_id))
@@ -953,7 +953,7 @@ class beanstalk_api {
 	}
 
 
-	//
+	//@return SimpleXMLElement
 	// Utility functions
 	//
 
@@ -964,7 +964,7 @@ class beanstalk_api {
 	 * @param string $api_params [optional]
 	 * @param string $curl_verb [optional]
 	 * @param string $write_data [optional]
-	 * @return mixed
+	 * @return SimpleXMLElement Returns false on error
 	 */
 	private function _execute_curl($api_name, $api_params = NULL, $curl_verb = "GET", $write_data = NULL) {
 		if( ! isset($api_params))
@@ -987,7 +987,13 @@ class beanstalk_api {
 
 		$data = curl_exec($ch);
 
-		//TODO Check response code using curl_getinfo()
+		$curl_info = curl_getinfo($ch);
+		
+		if($curl_info['http_code'] != 200) {
+			$this->error_code = $curl_info['http_code'];
+			$this->error_string = "Curl request failed - http_code was " . $curl_info['http_code'];
+			return FALSE;
+		}
 
 		// Request failed
 		if ($data === FALSE) {
@@ -995,9 +1001,11 @@ class beanstalk_api {
 			$this->error_string = curl_error($ch);
 			curl_close($ch);
 			return FALSE;
-		} else {
-			curl_close($ch);
-			return $data;
 		}
+		
+		curl_close($ch);
+		
+		// Process XML into SimpleXMLElement
+		return simplexml_load_string($data);
 	}
 }
