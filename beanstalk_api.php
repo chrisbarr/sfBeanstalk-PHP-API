@@ -193,6 +193,25 @@ class beanstalk_api {
 
 
 	//
+	// Public Keys
+	//
+
+	/**
+	 * Return all public keys for current user - or for a specified user (if using admin account)
+	 *
+	 * @link http://api.beanstalkapp.com/public_key.html
+	 * @param integer $user_id [optional]
+	 * @return xml
+	 */
+	public function find_all_public_keys($user_id = NULL) {
+		if(!is_null($user_id))
+			return $this->_execute_curl("public_keys.xml?user_id=" . $user_id);
+		else
+			return $this->_execute_curl("public_keys.xml");
+	}
+
+
+	//
 	// Repositories
 	//
 

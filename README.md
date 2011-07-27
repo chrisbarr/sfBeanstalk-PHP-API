@@ -23,6 +23,7 @@ List of available function calls:
 * `create_user(login, email, first_name, last_name, password);`
 * `update_user(user_id, params);`
 * `delete_user(user_id);`
+* `find_all_public_keys();`
 * `find_all_repositories();`
 * `find_single_repository(repo_id);`
 * `create_repository(name, type_id, title);`
