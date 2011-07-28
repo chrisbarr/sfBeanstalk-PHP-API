@@ -953,7 +953,7 @@ class beanstalk_api {
 	}
 
 
-	//@return SimpleXMLElement
+	//
 	// Utility functions
 	//
 
