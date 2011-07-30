@@ -9,7 +9,7 @@ Requires PHP 5, libcurl library and SimpleXML extension
 ## Usage ##
 Before using any of the following methods, you must first declare the following:
 	
-`$varname = new beanstalk_api(array('account_name' => 'ACCOUNT_NAME_HERE', 'username' => 'USERNAME_HERE', 'password' => 'PASSWORD_HERE'));`
+	$varname = new beanstalk_api(array('account_name' => 'ACCOUNT_NAME_HERE', 'username' => 'USERNAME_HERE', 'password' => 'PASSWORD_HERE'));
 
 Make sure to put your account details in the correct places.
 
