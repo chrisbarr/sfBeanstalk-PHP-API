@@ -4,14 +4,16 @@
 Requires PHP 5, libcurl library and SimpleXML extension
 
 1. Copy beanstalk_api.php into a directory on your webserver
-2. Call beanstalk_api.php in the php file you wish to use it in using `require_once('path/beanstalk_api.php');`
+2. Call beanstalk_api.php in the php file you wish to use it in, using `require_once('path_to_file/beanstalk_api.php');`
 
 ## Usage ##
-Before using any of the following methods, you must first declare the following:
+Before using any of the following methods, you must first call the following:
 	
-	$varname = new beanstalk_api(array('account_name' => 'ACCOUNT_NAME_HERE', 'username' => 'USERNAME_HERE', 'password' => 'PASSWORD_HERE'));
+	$beanstalk = new beanstalk_api(array('account_name' => 'ACCOUNT_NAME_HERE', 'username' => 'USERNAME_HERE', 'password' => 'PASSWORD_HERE'));
 
-Make sure to put your account details in the correct places.
+Make sure to put your account details in the appropriate places.
+
+Now call the API functions using the `$beanstalk` variable, ie. `$beanstalk->find_all_users();`
 
 ### API Methods ###
 List of available function calls:
