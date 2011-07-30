@@ -58,15 +58,27 @@ List of available function calls:
 * `create_release(repo_id, revision_id);`
 * `retry_release(repo_id, release_id);`
 
-Example simple test file:
+### Examples ###
+Display account details:
 
 	<?php
-		require_once('libraries/beanstalk_api.php')
+		require_once('path_to_file/beanstalk_api.php')
 		$beanstalk = new beanstalk_api(array('account_name' => 'myaccount', 'username' => 'chris', 'password' => 'pass'));
 		
 		$account_details = $beanstalk->get_account_details();
 		
-		var_dump($account_details);
+		print_r($account_details);
+	?>
+
+Fetch a list of repositories:
+
+	<?php
+		require_once('path_to_file/beanstalk_api.php');
+		$beanstalk = new beanstalk_api(array('account_name' => 'myaccount', 'username' => 'chris', 'password' => 'pass'));
+		
+		$repositories = $beanstalk->find_all_repositories();
+		
+		print_r($repositories);
 	?>
 
 ## Further info ##
