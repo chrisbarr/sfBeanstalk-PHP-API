@@ -61,7 +61,7 @@ class beanstalk_api {
 	 */
 	public function update_account_details($params = array()) {
 		if(count($params) == 0)
-			return "Nothing to update";
+			throw new InvalidArgumentException("Nothing to update");
 		
 		$xml = new SimpleXMLElement("<account></account>");
 		
@@ -113,7 +113,7 @@ class beanstalk_api {
 	 */
 	public function find_single_user($user_id) {
 		if(empty($user_id))
-			return "User ID required";
+			throw new InvalidArgumentException("User ID required");
 		else
 			return $this->_execute_curl("users", $user_id . ".xml");
 	}
@@ -143,7 +143,7 @@ class beanstalk_api {
 	 */
 	public function create_user($login, $email, $first_name, $last_name, $password, $admin = 0, $timezone = NULL) {
 		if(empty($login) || empty($email) || empty($first_name) || empty($last_name) || empty($password))
-			return "Some required fields missing";
+			throw new InvalidArgumentException("Some required fields missing");
 
 		$xml = new SimpleXMLElement('<user></user>');
 
@@ -170,10 +170,10 @@ class beanstalk_api {
 	 */
 	public function update_user($user_id, $params = array()) {
 		if(empty($user_id))
-			return "User ID required";
+			throw new InvalidArgumentException("User ID required");
 
 		if(count($params) == 0)
-			return "Nothing to update";
+			throw new InvalidArgumentException("Nothing to update");
 
 		$xml = new SimpleXMLElement('<user></user>');
 
@@ -207,7 +207,7 @@ class beanstalk_api {
 	 */
 	public function delete_user($user_id) {
 		if(empty($user_id))
-			return "User ID required";
+			throw new InvalidArgumentException("User ID required");
 
 		return $this->_execute_curl("users", $user_id . ".xml", "DELETE");
 	}
@@ -240,7 +240,7 @@ class beanstalk_api {
 	 */
 	public function find_single_public_key($key_id) {
 		if(empty($key_id))
-			return "Public key ID required";
+			throw new InvalidArgumentException("Public key ID required");
 		
 		return $this->_execute_curl("public_keys", $key_id . ".xml");
 	}
@@ -256,7 +256,7 @@ class beanstalk_api {
 	 */
 	public function create_public_key($content, $name = NULL, $user_id = NULL) {
 		if(empty($content))
-			return "Key content required";
+			throw new InvalidArgumentException("Key content required");
 		
 		$xml = new SimpleXMLElement('<public-key></public-key>');
 		
@@ -281,10 +281,10 @@ class beanstalk_api {
 	 */
 	public function update_public_key($key_id, $params = array()) {
 		if(empty($key_id))
-			return "Public key ID required";
+			throw new InvalidArgumentException("Public key ID required");
 		
 		if(count($params) == 0)
-			return "Nothing to update";
+			throw new InvalidArgumentException("Nothing to update");
 		
 		$xml = new SimpleXMLElement('<public-key></public-key>');
 		
@@ -306,7 +306,7 @@ class beanstalk_api {
 	 */
 	public function delete_public_key($key_id) {
 		if(empty($key_id))
-			return "Public key ID required";
+			throw new InvalidArgumentException("Public key ID required");
 		
 		return $this->_execute_curl("public_keys", $key_id . ".xml", "DELETE");
 	}
@@ -335,7 +335,7 @@ class beanstalk_api {
 	 */
 	public function find_single_repository($repo_id) {
 		if(empty($repo_id))
-			return "Repository ID required";
+			throw new InvalidArgumentException("Repository ID required");
 		else
 			return $this->_execute_curl("repositories", $repo_id . ".xml");
 	}
@@ -353,7 +353,7 @@ class beanstalk_api {
 	 */
 	public function create_repository($name, $type_id = "subversion", $title, $create_structure = true, $color_label = "grey") {
 		if(empty($name) || empty($title))
-			return "Repository name and title required";
+			throw new InvalidArgumentException("Repository name and title required");
 
 		$xml = new SimpleXMLElement('<repository></repository>');
 
@@ -383,10 +383,10 @@ class beanstalk_api {
 	 */
 	public function update_repository($repo_id, $params = array()) {
 		if(empty($repo_id))
-			return "Repository ID required";
+			throw new InvalidArgumentException("Repository ID required");
 
 		if(count($params) == 0)
-			return "Nothing to update";
+			throw new InvalidArgumentException("Nothing to update");
 
 		$xml = new SimpleXMLElement('<repository></repository>');
 
@@ -416,7 +416,7 @@ class beanstalk_api {
 	 */
 	public function find_user_permissions($user_id) {
 		if(empty($user_id))
-			return "User ID required";
+			throw new InvalidArgumentException("User ID required");
 		
 		return $this->_execute_curl("permissions", $user_id . ".xml");
 	}
@@ -435,7 +435,7 @@ class beanstalk_api {
 	 */
 	public function create_user_permissions($user_id, $repo_id, $read = false, $write = false, $full_deployments_access = false, $server_environment_id = NULL) {
 		if(empty($user_id) || empty($repo_id))
-			return "Some required fields missing";
+			throw new InvalidArgumentException("Some required fields missing");
 		
 		$xml = new SimpleXMLElement('<permission></permission>');
 		
@@ -483,7 +483,7 @@ class beanstalk_api {
 	 */
 	public function delete_user_permissions($permission_id) {
 		if(empty($permission_id))
-			return "Permission ID required";
+			throw new InvalidArgumentException("Permission ID required");
 		
 		return $this->_execute_curl("permissions", $permission_id . ".xml", "DELETE");
 	}
@@ -514,7 +514,7 @@ class beanstalk_api {
 	 */
 	public function find_single_repository_changesets($repo_id, $page = 1) {
 		if(empty($repo_id))
-			return "Repository ID required";
+			throw new InvalidArgumentException("Repository ID required");
 		else
 			return $this->_execute_curl("changesets", "repository.xml?repository_id=" . $repo_id . "&page=" . $page);
 	}
@@ -529,7 +529,7 @@ class beanstalk_api {
 	 */
 	public function find_single_changeset($repo_id, $revision) {
 		if(empty($repo_id) || empty($revision))
-			return "Changeset ID and repository ID required";
+			throw new InvalidArgumentException("Changeset ID and repository ID required");
 		else
 			return $this->_execute_curl("changesets", $revision . ".xml?repository_id=" . $repo_id);
 	}
@@ -549,7 +549,7 @@ class beanstalk_api {
 	*/
 	public function find_all_comments($repo_id, $page = 1) {
 		if(empty($repo_id))
-			return "Repository ID required";
+			throw new InvalidArgumentException("Repository ID required");
 		else
 			return $this->_execute_curl($repo_id, "comments.xml?page=" . $page);
 	}
@@ -564,7 +564,7 @@ class beanstalk_api {
 	 */
 	public function find_all_changeset_comments($repo_id, $revision) {
 		if(empty($repo_id) || empty($revision))
-			return "Repository ID and revision ID required";
+			throw new InvalidArgumentException("Repository ID and revision ID required");
 		else
 			return $this->_execute_curl($repo_id, "comments.xml?revision=" . $revision);
 	}
@@ -579,7 +579,7 @@ class beanstalk_api {
 	 */
 	public function find_single_comment($repo_id, $comment_id) {
 		if(empty($repo_id) || empty($comment_id))
-			return "Repository ID and comment ID required";
+			throw new InvalidArgumentException("Repository ID and comment ID required");
 		else
 			return $this->_execute_curl($repo_id, "comments/" . $comment_id . ".xml");
 	}
@@ -597,7 +597,7 @@ class beanstalk_api {
 	 */
 	public function create_comment($repo_id, $revision_id, $body, $file_path, $line_number) {
 		if(empty($repo_id) || empty($revision_id) || empty($body) || empty($file_path) || empty($line_number))
-			return "Some required fields missing";
+			throw new InvalidArgumentException("Some required fields missing");
 
 		$xml = new SimpleXMLElement('<comment></comment>');
 
@@ -625,7 +625,7 @@ class beanstalk_api {
 	 */
 	public function find_all_server_environments($repo_id) {
 		if(empty($repo_id))
-			return "Repository ID required";
+			throw new InvalidArgumentException("Repository ID required");
 		else
 			return $this->_execute_curl($repo_id, "server_environments.xml");
 	}
@@ -640,7 +640,7 @@ class beanstalk_api {
 	 */
 	public function find_single_server_environment($repo_id, $environment_id) {
 		if(empty($repo_id) || empty($environment_id))
-			return "Repository ID required";
+			throw new InvalidArgumentException("Repository ID required");
 		else
 			return $this->_execute_curl($repo_id, "server_environments/" . $environment_id . ".xml");
 	}
@@ -657,7 +657,7 @@ class beanstalk_api {
 	 */
 	public function create_server_environment($repo_id, $name, $automatic = false, $branch_name = NULL) {
 		if(empty($repo_id) || empty($name) || ($automatic !== false && $automatic !== true))
-			return "Repository ID, name and deploy automatically required";
+			throw new InvalidArgumentException("Repository ID, name and deploy automatically required");
 		
 		$xml = new SimpleXMLElement('<server-environment></server-environment>');
 		
@@ -681,10 +681,10 @@ class beanstalk_api {
 	 */
 	public function update_server_environment($repo_id, $environment_id, $params = array()) {
 		if(empty($repo_id) || empty($environment_id))
-			return "Repository ID and server environment ID requried";
+			throw new InvalidArgumentException("Repository ID and server environment ID requried");
 		
 		if(count($params) == 0)
-			return "Nothing to update";
+			throw new InvalidArgumentException("Nothing to update");
 		
 		$xml = new SimpleXMLElement('<server-environment></server-environment>');
 		
@@ -715,7 +715,7 @@ class beanstalk_api {
 	 */
 	function find_all_release_servers($repo_id, $environment_id) {
 		if(empty($repo_id) || empty($environment_id))
-			return "Repository ID and environment ID required";
+			throw new InvalidArgumentException("Repository ID and environment ID required");
 		else
 			return $this->_execute_curl($repo_id, "release_servers.xml?environment_id=" . $environment_id);
 	}
@@ -730,7 +730,7 @@ class beanstalk_api {
 	 */
 	public function find_single_release_server($repo_id, $server_id) {
 		if(empty($repo_id) || empty($server_id))
-			return "Repository ID and server ID required";
+			throw new InvalidArgumentException("Repository ID and server ID required");
 		else
 			return $this->_execute_curl($repo_id, "release_servers/" . $server_id . ".xml");
 	}
@@ -758,7 +758,7 @@ class beanstalk_api {
 	 */
 	public function create_release_server($repo_id, $environment_id, $name, $local_path, $remote_path, $remote_addr, $protocol = 'ftp', $port = 21, $login, $password, $use_active_mode = NULL, $authenticate_by_key = NULL, $use_feat = true, $pre_release_hook = NULL, $post_release_hook = NULL) {
 		if(empty($repo_id) || empty($environment_id) || empty($name) || empty($local_path) || empty($remote_path) || empty($remote_addr) || empty($protocol) || empty($port) || empty($login))
-			return "Some required fields missing";
+			throw new InvalidArgumentException("Some required fields missing");
 		
 		$xml = new SimpleXMLElement('<release-server></release-server>');
 		
@@ -812,10 +812,10 @@ class beanstalk_api {
 	 */
 	public function update_release_server($repo_id, $server_id, $params = array()) {
 		if(empty($repo_id) || empty($server_id))
-			return "Repository ID and release server ID required";
+			throw new InvalidArgumentException("Repository ID and release server ID required");
 		
 		if(count($params) == 0)
-			return "Nothing to update";
+			throw new InvalidArgumentException("Nothing to update");
 		
 		$xml = new SimpleXMLElement('<release-server></release-server>');
 		
@@ -871,7 +871,7 @@ class beanstalk_api {
 	 */
 	public function delete_release_server($repo_id, $server_id) {
 		if(empty($repo_id) || empty($server_id))
-			return "Repository ID and release server ID required";
+			throw new InvalidArgumentException("Repository ID and release server ID required");
 		
 		return $this->_execute_curl($repo_id, "release_servers/" . $server_id . ".xml", "DELETE");
 	}
@@ -891,7 +891,7 @@ class beanstalk_api {
 	 */
 	public function find_all_releases($repo_id, $page = 1) {
 		if(empty($repo_id))
-			return "Repository ID required";
+			throw new InvalidArgumentException("Repository ID required");
 		else
 			return $this->_execute_curl($repo_id, "releases.xml?page=" . $page);
 	}
@@ -906,7 +906,7 @@ class beanstalk_api {
 	 */
 	public function find_single_release($repo_id, $release_id) {
 		if(empty($repo_id) || empty($release_id))
-			return "Repository ID and release ID required";
+			throw new InvalidArgumentException("Repository ID and release ID required");
 		else
 			return $this->_execute_curl($repo_id, $release_id . ".xml");
 	}
@@ -924,7 +924,7 @@ class beanstalk_api {
 	 */
 	public function create_release($repo_id, $environment_id, $revision_id, $comment = '', $deploy_from_scratch = false) {
 		if(empty($repo_id) || empty($environment_id) || empty($revision))
-			return "Repository ID, server environment ID and revision required";
+			throw new InvalidArgumentException("Repository ID, server environment ID and revision required");
 		
 		$xml = new SimpleXMLElement('<release></release>');
 		
@@ -947,7 +947,7 @@ class beanstalk_api {
 	 */
 	public function retry_release($repo_id, $release_id) {
 		if(empty($repo_id) || empty($release_id))
-			return "Repository ID and release ID required";
+			throw new InvalidArgumentException("Repository ID and release ID required");
 		
 		return $this->_execute_curl($repo_id, "releases/" . $release_id . "/retry.xml", "PUT");
 	}
@@ -992,7 +992,7 @@ class beanstalk_api {
 		if($curl_info['http_code'] != 200) {
 			$this->error_code = $curl_info['http_code'];
 			$this->error_string = "Curl request failed - http_code was " . $curl_info['http_code'];
-			return FALSE;
+			throw new APIException($this->error_code . ": ".$this->error_string);
 		}
 
 		// Request failed
@@ -1000,7 +1000,7 @@ class beanstalk_api {
 			$this->error_code = curl_errno($ch);
 			$this->error_string = curl_error($ch);
 			curl_close($ch);
-			return FALSE;
+			throw new APIException($this->error_code . ": " . $this->error_string);
 		}
 		
 		curl_close($ch);
@@ -1009,3 +1009,6 @@ class beanstalk_api {
 		return simplexml_load_string($data);
 	}
 }
+
+// Exception thrown if there's a problem with the API
+class APIException extends Exception {}
