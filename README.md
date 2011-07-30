@@ -1,17 +1,19 @@
-# Alpha Beanstalk PHP API Documentation #
+# Beanstalk PHP API Documentation v0.1 #
 
 ## Installation ##
 Requires PHP 5, libcurl library and SimpleXML extension
 
-1. Edit the configuration options at the top of beanstalk_api.php to match your info
-2. Copy beanstalk_api.php into a directory on your webserver
-3. Call beanstalk_api.php in the php file you wish to use it in using `require_once('path/beanstalk_api.php');`
+1. Copy beanstalk_api.php into a directory on your webserver
+2. Call beanstalk_api.php in the php file you wish to use it in using `require_once('path/beanstalk_api.php');`
 
 ## Usage ##
 Before using any of the following methods, you must first declare the following:
 	
-`$varname = new beanstalk_api();`
+`$varname = new beanstalk_api(array('account_name' => 'ACCOUNT_NAME_HERE', 'username' => 'USERNAME_HERE', 'password' => 'PASSWORD_HERE'));`
 
+Make sure to put your account details in the correct places.
+
+### API Methods ###
 List of available function calls:
 
 * `get_account_details();`
@@ -60,9 +62,12 @@ Example simple test file:
 
 	<?php
 		require_once('libraries/beanstalk_api.php')
-		$beanstalk = new beanstalk_api();
+		$beanstalk = new beanstalk_api(array('account_name' => 'myaccount', 'username' => 'chris', 'password' => 'pass'));
 		
 		$account_details = $beanstalk->get_account_details();
 		
 		var_dump($account_details);
 	?>
+
+## Further info ##
+Detailed documentation about the API can be found on the Beanstalk website at http://api.beanstalkapp.com/
