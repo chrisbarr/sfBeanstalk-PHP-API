@@ -3,16 +3,19 @@
 ## Installation ##
 Requires PHP 5, libcurl library and SimpleXML extension
 
-### Download source ###
+### Either download source ###
 Download the most recent package from the '**Downloads**' link above (to the right of the project description)
 
-### Via GitHub ###
+### Or clone via GitHub ###
 Clone the most recent copy of the repository
 
-	git clone git@github.com:chrisbarr/Beanstalk-PHP-API.git
+	git clone git://github.com/chrisbarr/Beanstalk-PHP-API.git
 	cd ./Beanstalk-PHP-API
 
+### Then include file ###
+
 Include beanstalkapi.class.php in the php file you wish to use it in, using
+
 	require_once('lib/beanstalkapi.class.php');
 
 ## Usage ##
