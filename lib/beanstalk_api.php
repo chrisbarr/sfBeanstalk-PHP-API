@@ -25,17 +25,23 @@ class beanstalk_api {
 	/**
 	 * Constructor
 	 *
-	 * Allows you to set custom params
-	 *
-	 * @param array $params
+	 * @param string $account_name [optional]
+	 * @param string $username [optional]
+	 * @param string $password [optional]
 	 * @return void
 	 */
-	public function __construct($params = array()) {
-		if( ! empty($params)) {
-			foreach($params as $key => $param) {
-				$this->{$key} = $param;
-			}
-		}
+	public function __construct($account_name = null, $username = null, $password = null) {
+		if(!is_null($account_name))
+			$this->account_name = $account_name;
+		
+		if(!is_null($username))
+			$this->username = $username;
+		
+		if(!is_null($password))
+			$this->password = $password;
+		
+		if(empty($this->account_name) || empty($this->username) || empty($this->password))
+			throw new InvalidArgumentException("Account name, username and password required");
 	}
 
 

@@ -9,7 +9,7 @@ Requires PHP 5, libcurl library and SimpleXML extension
 ## Usage ##
 Before using any of the following methods, you must first call the following:
 	
-	$beanstalk = new beanstalk_api(array('account_name' => 'ACCOUNT_NAME_HERE', 'username' => 'USERNAME_HERE', 'password' => 'PASSWORD_HERE'));
+	$beanstalk = new beanstalk_api('ACCOUNT_NAME_HERE', 'USERNAME_HERE', 'PASSWORD_HERE');
 
 Make sure to put your account details in the appropriate places.
 
@@ -65,7 +65,7 @@ Display account details:
 
 	<?php
 		require_once('path_to_file/beanstalk_api.php')
-		$beanstalk = new beanstalk_api(array('account_name' => 'myaccount', 'username' => 'chris', 'password' => 'pass'));
+		$beanstalk = new beanstalk_api('myaccount', 'chris', 'pass');
 		
 		$account_details = $beanstalk->get_account_details();
 		
@@ -76,7 +76,7 @@ Fetch a list of repositories:
 
 	<?php
 		require_once('path_to_file/beanstalk_api.php');
-		$beanstalk = new beanstalk_api(array('account_name' => 'myaccount', 'username' => 'chris', 'password' => 'pass'));
+		$beanstalk = new beanstalk_api('myaccount', 'chris', 'pass');
 		
 		$repositories = $beanstalk->find_all_repositories();
 		
@@ -87,7 +87,7 @@ If there is a problem connecting to the API, the function will throw an Exceptio
 
 	<?php
 		require_once('path_to_file/beanstalk_api.php');
-		$beanstalk = new beanstalk_api(array('account_name' => 'myaccount', 'username' => 'chris', 'password' => 'pass'));
+		$beanstalk = new beanstalk_api('myaccount', 'chris', 'pass');
 		
 		try
 		{
