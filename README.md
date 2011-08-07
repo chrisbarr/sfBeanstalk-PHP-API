@@ -3,17 +3,17 @@
 ## Installation ##
 Requires PHP 5, libcurl library and SimpleXML extension
 
-1. Copy beanstalk_api.php into a directory on your webserver
-2. Call beanstalk_api.php in the php file you wish to use it in, using `require_once('path_to_file/beanstalk_api.php');`
+1. Copy beanstalkapi.class.php into a directory on your webserver
+2. Call beanstalkapi.class.php in the php file you wish to use it in, using `require_once('lib/beanstalkapi.class.php');`
 
 ## Usage ##
 Before using any of the following methods, you must first call the following:
 	
-	$beanstalk = new beanstalk_api('ACCOUNT_NAME_HERE', 'USERNAME_HERE', 'PASSWORD_HERE');
+	$Beanstalk = new BeanstalkAPI('ACCOUNT_NAME_HERE', 'USERNAME_HERE', 'PASSWORD_HERE');
 
 Make sure to put your account details in the appropriate places.
 
-Now call the API functions using the `$beanstalk` variable, ie. `$beanstalk->find_all_users();`
+Now call the API functions using the `$Beanstalk` variable, ie. `$Beanstalk->find_all_users();`
 
 ### API Methods ###
 List of available function calls:
@@ -64,10 +64,10 @@ List of available function calls:
 Display account details:
 
 	<?php
-		require_once('path_to_file/beanstalk_api.php')
-		$beanstalk = new beanstalk_api('myaccount', 'chris', 'pass');
+		require_once('lib/beanstalkapi.class.php')
+		$Beanstalk = new BeanstalkAPI('myaccount', 'chris', 'pass');
 		
-		$account_details = $beanstalk->get_account_details();
+		$account_details = $Beanstalk->get_account_details();
 		
 		print_r($account_details);
 	?>
@@ -75,10 +75,10 @@ Display account details:
 Fetch a list of repositories:
 
 	<?php
-		require_once('path_to_file/beanstalk_api.php');
-		$beanstalk = new beanstalk_api('myaccount', 'chris', 'pass');
+		require_once('lib/beanstalkapi.class.php');
+		$Beanstalk = new BeanstalkAPI('myaccount', 'chris', 'pass');
 		
-		$repositories = $beanstalk->find_all_repositories();
+		$repositories = $Beanstalk->find_all_repositories();
 		
 		print_r($repositories);
 	?>
@@ -86,12 +86,12 @@ Fetch a list of repositories:
 If there is a problem connecting to the API, the function will throw an Exception:
 
 	<?php
-		require_once('path_to_file/beanstalk_api.php');
-		$beanstalk = new beanstalk_api('myaccount', 'chris', 'pass');
+		require_once('lib/beanstalkapi.class.php');
+		$Beanstalk = new BeanstalkAPI('myaccount', 'chris', 'pass');
 		
 		try
 		{
-			$users = $beanstalk->find_all_users();
+			$users = $Beanstalk->find_all_users();
 			
 			// This will only be executed if find_all_users() ran correctly
 			print_r($users);

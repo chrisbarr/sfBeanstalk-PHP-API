@@ -6,7 +6,7 @@
  * @link http://api.beanstalkapp.com/
  * @version 0.2
  */
-class beanstalk_api {
+class BeanstalkAPI {
 	/**
 	 * Beanstalk account configuration
 	 *
