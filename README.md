@@ -3,10 +3,10 @@
 ## Installation ##
 Requires PHP 5, libcurl library and SimpleXML extension
 
-### Either download source ###
+### *Either* download source ###
 Download the most recent package from the '**Downloads**' link above (to the right of the project description)
 
-### Or clone via GitHub ###
+### *Or* clone via GitHub ###
 Clone the most recent copy of the repository
 
 	git clone git://github.com/chrisbarr/Beanstalk-PHP-API.git
