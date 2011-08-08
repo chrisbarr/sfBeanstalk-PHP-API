@@ -10,12 +10,13 @@ class BeanstalkAPI {
 	/**
 	 * Beanstalk account configuration
 	 *
-	 * Please enter your account name, username and password below.
+	 * Either enter your account name, username and password below,
+	 * or pass details when creating object ie. new BeanstalkAPI('account', 'user', 'pass');
 	 */
 
-	private $account_name	= 'example';		// Beanstalk account name (first segment of your beanstalk URL - http://example.beanstalkapp.com)
-	private $username		= 'username';		// Beanstalk username
-	private $password		= 'password';		// Beanstalk password
+	private $account_name	= '';		// Beanstalk account name (first segment of your beanstalk URL - http://example.beanstalkapp.com)
+	private $username		= '';		// Beanstalk username
+	private $password		= '';		// Beanstalk password
 	
 	public $error_code = '';
 	public $error_string = '';
