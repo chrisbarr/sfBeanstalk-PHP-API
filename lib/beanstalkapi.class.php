@@ -4,18 +4,19 @@
  * PHP class for connecting to the Beanstalk API
  *
  * @link http://api.beanstalkapp.com/
- * @version 0.3
+ * @version 0.4
  */
 class BeanstalkAPI {
 	/**
 	 * Beanstalk account configuration
 	 *
-	 * Please enter your account name, username and password below.
+	 * Either enter your account name, username and password below,
+	 * or pass details when creating object ie. new BeanstalkAPI('account', 'user', 'pass');
 	 */
 
-	private $account_name	= 'example';		// Beanstalk account name (first segment of your beanstalk URL - http://example.beanstalkapp.com)
-	private $username		= 'username';		// Beanstalk username
-	private $password		= 'password';		// Beanstalk password
+	private $account_name	= '';		// Beanstalk account name (first segment of your beanstalk URL - http://example.beanstalkapp.com)
+	private $username		= '';		// Beanstalk username
+	private $password		= '';		// Beanstalk password
 	
 	public $error_code = '';
 	public $error_string = '';
@@ -574,6 +575,21 @@ class BeanstalkAPI {
 			throw new InvalidArgumentException("Repository ID and revision ID required");
 		else
 			return $this->_execute_curl($repo_id, "comments.xml?revision=" . $revision);
+	}
+
+	/**
+	 * Return comments from a specific user
+	 *
+	 * @link http://api.beanstalkapp.com/comment.html
+	 * @param integer $user_id
+	 * @param integer $page [optional] 15 results per page
+	 * @return SimpleXMLElement
+	 */
+	public function find_single_user_comments($user_id, $page = 1) {
+		if(empty($user_id))
+			throw new InvalidArgumentException("User ID required");
+		
+		return $this->_execute_curl("comments", "user.xml?user_id=" . $user_id . "&page=" . $page);
 	}
 
 	/**
