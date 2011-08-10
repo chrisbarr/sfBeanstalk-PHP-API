@@ -578,6 +578,21 @@ class BeanstalkAPI {
 	}
 
 	/**
+	 * Return comments from a specific user
+	 *
+	 * @link http://api.beanstalkapp.com/comment.html
+	 * @param integer $user_id
+	 * @param integer $page [optional] 15 results per page
+	 * @return SimpleXMLElement
+	 */
+	public function find_single_user_comments($user_id, $page = 1) {
+		if(empty($user_id))
+			throw new InvalidArgumentException("User ID required");
+		
+		return $this->_execute_curl("comments", "user.xml?user_id=" . $user_id . "&page=" . $page);
+	}
+
+	/**
 	 * Returns a Beanstalk repository's comment based on a specific comment ID
 	 *
 	 * @link http://api.beanstalkapp.com/comment.html

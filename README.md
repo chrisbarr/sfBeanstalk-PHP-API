@@ -56,6 +56,7 @@ List of available function calls:
 * `find_single_changeset(repo_id, revision);`
 * `find_all_comments(repo_id);`
 * `find_all_changeset_comments(repo_id, revision);`
+* `find_single_user_comments(user_id);`
 * `find_single_comment(repo_id, comment_id);`
 * `create_comment(repo_id, revision_id, body, file_path, line_number);`
 * `find_all_server_environments(repo_id);`
