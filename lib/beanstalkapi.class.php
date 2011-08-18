@@ -4,7 +4,7 @@
  * PHP class for connecting to the Beanstalk API
  *
  * @link http://api.beanstalkapp.com/
- * @version 0.5
+ * @version 0.5.1
  */
 class BeanstalkAPI {
 	/**
@@ -1012,7 +1012,8 @@ class BeanstalkAPI {
 
 		$curl_info = curl_getinfo($ch);
 		
-		if($curl_info['http_code'] != 200) {
+		// Check return code is in 2xx range
+		if(floor($curl_info['http_code'] / 100) != 2) {
 			$this->error_code = $curl_info['http_code'];
 			$this->error_string = "Curl request failed";
 			throw new APIException($this->error_code . ": ".$this->error_string, $this->error_code);
