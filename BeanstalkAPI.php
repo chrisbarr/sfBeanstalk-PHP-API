@@ -1037,4 +1037,6 @@ class BeanstalkAPI {
 }
 
 // Exception thrown if there's a problem with the API
-class APIException extends Exception {}
+class APIException extends \Exception {}
+
+class InvalidArgumentException extends \InvalidArgumentException {}
