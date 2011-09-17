@@ -4,7 +4,7 @@
  * PHP class for connecting to the Beanstalk API
  *
  * @link http://api.beanstalkapp.com/
- * @version 0.5.1
+ * @version 0.5.2
  */
 class BeanstalkAPI {
 	/**
@@ -946,7 +946,7 @@ class BeanstalkAPI {
 	 * @return SimpleXMLElement
 	 */
 	public function create_release($repo_id, $environment_id, $revision_id, $comment = '', $deploy_from_scratch = false) {
-		if(empty($repo_id) || empty($environment_id) || empty($revision))
+		if(empty($repo_id) || empty($environment_id) || empty($revision_id))
 			throw new InvalidArgumentException("Repository ID, server environment ID and revision required");
 		
 		$xml = new SimpleXMLElement('<release></release>');
