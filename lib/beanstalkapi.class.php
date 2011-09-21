@@ -106,10 +106,14 @@ class BeanstalkAPI {
 	 * Returns Beanstalk account user list.
 	 *
 	 * @link http://api.beanstalkapp.com/user.html
+	 * @param integer $page [optional] Current page of results
+	 * @param integer $per_page [optional] Results per page - default 30, max 50
 	 * @return SimpleXMLElement
 	 */
-	public function find_all_users() {
-		return $this->_execute_curl("users.xml");
+	public function find_all_users($page = 1, $per_page = 30) {
+		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
+				
+		return $this->_execute_curl("users.xml?page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -328,10 +332,14 @@ class BeanstalkAPI {
 	 * Returns Beanstalk account repository list
 	 *
 	 * @link http://api.beanstalkapp.com/repository.html
+	 * @param integer $page [optional] Current page of results
+	 * @param integer $per_page [optional] Results per page - default 30, max 50
 	 * @return SimpleXMLElement
 	 */
-	public function find_all_repositories() {
-		return $this->_execute_curl("repositories.xml");
+	public function find_all_repositories($page = 1, $per_page = 30) {
+		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
+		
+		return $this->_execute_curl("repositories.xml?page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -505,11 +513,17 @@ class BeanstalkAPI {
 	 * Returns Beanstalk account changeset list
 	 *
 	 * @link http://api.beanstalkapp.com/changeset.html
-	 * @param integer $page [optional] 15 results per page
+	 * @param integer $page [optional] Current page of results
+	 * @param integer $per_page [optional] Results per page - default 15, max 30
+	 * @param string $order_field [optioanl] Order results by a field - default 'time'
+	 * @param string $order [optional] Order direction - can be ASC or DESC - default 'DESC'
 	 * @return SimpleXMLElement
 	 */
-	public function find_all_changesets($page = 1) {
-		return $this->_execute_curl("changesets.xml?page=" . $page);
+	public function find_all_changesets($page = 1, $per_page = 15, $order_field = 'time', $order = 'DESC') {
+		$per_page = intval($per_page) > 30 ? 30 : intval($per_page);
+		$order = strtoupper($order) == 'ASC' ? 'ASC' : 'DESC';
+		
+		return $this->_execute_curl("changesets.xml?page=" . $page . "&per_page=" . $per_page . "&order_field" . $order_field . "&order=" . $order);
 	}
 
 	/**
@@ -517,14 +531,20 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/changeset.html
 	 * @param integer $repo_id		required
-	 * @param integer $page [optional] UNDOCUMENTED
+	 * @param integer $page [optional]
+	 * @param integer $per_page [optional] Set results per page - default 15
+	 * @param string $order_field [optioanl] Order results by a field - default 'time'
+	 * @param string $order [optional] Order direction - can be ASC or DESC - default 'DESC'
 	 * @return SimpleXMLElement
 	 */
-	public function find_single_repository_changesets($repo_id, $page = 1) {
+	public function find_single_repository_changesets($repo_id, $page = 1, $per_page = 15, $order_field = 'time', $order = 'DESC') {
 		if(empty($repo_id))
 			throw new InvalidArgumentException("Repository ID required");
-		else
-			return $this->_execute_curl("changesets", "repository.xml?repository_id=" . $repo_id . "&page=" . $page);
+		
+		$per_page = intval($per_page) > 30 ? 30 : intval($per_page);
+		$order = strtoupper($order) == 'ASC' ? 'ASC' : 'DESC';
+		
+		return $this->_execute_curl("changesets", "repository.xml?repository_id=" . $repo_id . "&page=" . $page . "&per_page=" . $per_page . "&order_field" . $order_field . "&order=" . $order);
 	}
 
 	/**
@@ -547,19 +567,22 @@ class BeanstalkAPI {
 	// Comments
 	//
 
-   /**
-	* Returns a Beanstalk repository's comment listing
-	*
-	* @link http://api.beanstalkapp.com/comment.html
-	* @param integer $repo_id		required
-	* @param integer $page [optional] 15 results per page
-	* @return SimpleXMLElement
-	*/
-	public function find_all_comments($repo_id, $page = 1) {
+	/**
+	 * Returns a Beanstalk repository's comment listing
+	 *
+	 * @link http://api.beanstalkapp.com/comment.html
+	 * @param integer $repo_id		required
+	 * @param integer $page [optional] Current page of results
+	 * @param integer $per_page [optional] Results per page - default 15, max 50
+	 * @return SimpleXMLElement
+	 */
+	public function find_all_comments($repo_id, $page = 1, $per_page = 15) {
 		if(empty($repo_id))
 			throw new InvalidArgumentException("Repository ID required");
-		else
-			return $this->_execute_curl($repo_id, "comments.xml?page=" . $page);
+		
+		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
+		
+		return $this->_execute_curl($repo_id, "comments.xml?page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -568,13 +591,17 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/comment.html
 	 * @param integer $repo_id		required
 	 * @param integer $revision		required
+	 * @param integer $page [optional] Current page of results
+	 * @param integer $per_page [optional] Results per page - default 15, max 50
 	 * @return SimpleXMLElement
 	 */
-	public function find_all_changeset_comments($repo_id, $revision) {
+	public function find_all_changeset_comments($repo_id, $revision, $page = 1, $per_page = 15) {
 		if(empty($repo_id) || empty($revision))
 			throw new InvalidArgumentException("Repository ID and revision ID required");
-		else
-			return $this->_execute_curl($repo_id, "comments.xml?revision=" . $revision);
+		
+		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
+		
+		return $this->_execute_curl($repo_id, "comments.xml?revision=" . $revision . "&page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -582,14 +609,17 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/comment.html
 	 * @param integer $user_id
-	 * @param integer $page [optional] 15 results per page
+	 * @param integer $page [optional] Current page of results
+	 * @param integer $per_page [optional] Results per page - default 15, max 50
 	 * @return SimpleXMLElement
 	 */
-	public function find_single_user_comments($user_id, $page = 1) {
+	public function find_single_user_comments($user_id, $page = 1, $per_page = 15) {
 		if(empty($user_id))
 			throw new InvalidArgumentException("User ID required");
 		
-		return $this->_execute_curl("comments", "user.xml?user_id=" . $user_id . "&page=" . $page);
+		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
+		
+		return $this->_execute_curl("comments", "user.xml?user_id=" . $user_id . "&page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -909,14 +939,17 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/release.html
 	 * @param integer $repo_id		required
-	 * @param integer $page [optional] 20 results per page
+	 * @param integer $page [optional] Current page of results
+	 * @param integer $per_page [optional] Results per page - default 10, max 50
 	 * @return SimpleXMLElement
 	 */
-	public function find_all_releases($repo_id, $page = 1) {
+	public function find_all_releases($repo_id, $page = 1, $per_page = 10) {
 		if(empty($repo_id))
 			throw new InvalidArgumentException("Repository ID required");
-		else
-			return $this->_execute_curl($repo_id, "releases.xml?page=" . $page);
+		
+		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
+		
+		return $this->_execute_curl($repo_id, "releases.xml?page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -924,14 +957,18 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/release.html
 	 * @param integer $repo_id		required
-	 * @param integer $release_id		required
+	 * @param integer $release_id	required
+	 * @param integer $page [optional] Current page of results
+	 * @param integer $per_page [optional] Results per page - default 10, max 50
 	 * @return SimpleXMLElement
 	 */
-	public function find_single_release($repo_id, $release_id) {
+	public function find_single_release($repo_id, $release_id, $page = 1, $per_page = 10) {
 		if(empty($repo_id) || empty($release_id))
 			throw new InvalidArgumentException("Repository ID and release ID required");
-		else
-			return $this->_execute_curl($repo_id, $release_id . ".xml");
+		
+		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
+		
+		return $this->_execute_curl($repo_id, $release_id . ".xml?page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
