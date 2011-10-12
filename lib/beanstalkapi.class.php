@@ -958,17 +958,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/release.html
 	 * @param integer $repo_id		required
 	 * @param integer $release_id	required
-	 * @param integer $page [optional] Current page of results
-	 * @param integer $per_page [optional] Results per page - default 10, max 50
 	 * @return SimpleXMLElement
 	 */
-	public function find_single_release($repo_id, $release_id, $page = 1, $per_page = 10) {
+	public function find_single_release($repo_id, $release_id) {
 		if(empty($repo_id) || empty($release_id))
 			throw new InvalidArgumentException("Repository ID and release ID required");
 		
-		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
-		
-		return $this->_execute_curl($repo_id, $release_id . ".xml?page=" . $page . "&per_page=" . $per_page);
+		return $this->_execute_curl($repo_id, "releases/" . $release_id . ".xml");
 	}
 
 	/**
