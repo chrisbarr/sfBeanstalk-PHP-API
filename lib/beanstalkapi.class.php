@@ -935,21 +935,25 @@ class BeanstalkAPI {
 	//
 
 	/**
-	 * Returns a Beanstalk repository's releases listing
+	 * Returns a listing of releases for an account, or for a Beanstalk repository if specified
 	 *
 	 * @link http://api.beanstalkapp.com/release.html
-	 * @param integer $repo_id		required
+	 * @param integer $repo_id [optional] Releases from specified repository
 	 * @param integer $page [optional] Current page of results
 	 * @param integer $per_page [optional] Results per page - default 10, max 50
 	 * @return SimpleXMLElement
 	 */
-	public function find_all_releases($repo_id, $page = 1, $per_page = 10) {
-		if(empty($repo_id))
-			throw new InvalidArgumentException("Repository ID required");
-		
+	public function find_all_releases($repo_id = NULL, $page = 1, $per_page = 10) {
 		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
 		
-		return $this->_execute_curl($repo_id, "releases.xml?page=" . $page . "&per_page=" . $per_page);
+		if(empty($repo_id))
+		{
+			return $this->_execute_curl("releases.xml?page=" . $page . "&per_page=" . $per_page, NULL);
+		}
+		else
+		{
+			return $this->_execute_curl($repo_id, "releases.xml?page=" . $page . "&per_page=" . $per_page);
+		}
 	}
 
 	/**
