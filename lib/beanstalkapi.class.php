@@ -747,9 +747,10 @@ class BeanstalkAPI {
 	 * @param string $name
 	 * @param bool $automatic [optional]
 	 * @param string $branch_name [optional] Git only
+	 * @param string $color_label [optional] Accepts - red, orange, yellow, green, blue, pink, grey
 	 * @return SimpleXMLElement
 	 */
-	public function create_server_environment($repo_id, $name, $automatic = false, $branch_name = NULL) {
+	public function create_server_environment($repo_id, $name, $automatic = false, $branch_name = NULL, $color_label = NULL) {
 		if(empty($repo_id) || empty($name) || ($automatic !== false && $automatic !== true))
 			throw new InvalidArgumentException("Repository ID, name and deploy automatically required");
 		
@@ -760,6 +761,9 @@ class BeanstalkAPI {
 		
 		if(!is_null($branch_name))
 			$xml->addChild('branch-name', $branch_name);
+		
+		if(!is_null($color_label))
+			$xml->addChild('color-label', 'color-' . $color_label);
 		
 		return $this->_execute_curl($repo_id, "server_environments.xml", "POST", $xml->asXml());
 	}
