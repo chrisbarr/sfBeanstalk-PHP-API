@@ -50,6 +50,8 @@ List of available function calls:
 * `find_single_repository(repo_id);`
 * `create_repository(name, type_id, title);`
 * `update_repository(repo_id, params);`
+* `find_import(import_id);`
+* `create_import(repo_id, import_url);`
 * `find_user_permissions(user_id);`
 * `create_user_permissions(user_id, repo_id, read, write, full_deployments_access);`
 * `delete_user_permissions(user_id);`
