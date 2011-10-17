@@ -39,6 +39,8 @@ List of available function calls:
 * `create_user(login, email, first_name, last_name, password);`
 * `update_user(user_id, params);`
 * `delete_user(user_id);`
+* `find_invitation(invitation_id);`
+* `create_invitation(email, first_name, last_name);`
 * `find_all_public_keys();`
 * `find_single_public_key(key_id);`
 * `create_public_key(content);`

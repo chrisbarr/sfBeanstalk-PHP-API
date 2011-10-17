@@ -226,6 +226,47 @@ class BeanstalkAPI {
 
 
 	//
+	// Invitations
+	//
+
+	/**
+	 * Return an invitation
+	 * @param integer $invitation_id
+	 * @return SimpleXMLElement
+	 */
+	public function find_invitation($invitation_id)
+	{
+		if(empty($invitation_id))
+			throw new InvalidArgumentException("Invitation ID required");
+		
+		return $this->_execute_curl("invitations", $invitation_id . ".xml");
+	}
+
+	/**
+	 * Create an invitation - creates a User and Invitation
+	 * @param string $email
+	 * @param string $first_name
+	 * @param string $last_name
+	 * @return SimpleXMLElement
+	 */
+	public function create_invitation($email, $first_name, $last_name)
+	{
+		if(empty($email) || empty($first_name) || empty($last_name))
+			throw new InvalidArgumentException("Some required fields missing");
+		
+		$xml = new SimpleXMLElement('<invitation></invitation>');
+		
+		$user = $xml->addChild('user');
+		
+		$user->addChild('email', $email);
+		$user->addChild('first-name', $first_name);
+		$user->addChild('last-name', $last_name);
+		
+		return $this->_execute_curl("invitations.xml", NULL, "POST", $xml->asXml());
+	}
+
+
+	//
 	// Public Keys
 	//
 
