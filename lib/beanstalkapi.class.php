@@ -365,13 +365,13 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/public_key.html
 	 * @param integer $user_id [optional]
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_public_keys($user_id = NULL) {
 		if(!is_null($user_id))
-			return $this->_execute_curl("public_keys.xml?user_id=" . $user_id);
+			return $this->_execute_curl("public_keys." . $this->format . "?user_id=" . $user_id);
 		else
-			return $this->_execute_curl("public_keys.xml");
+			return $this->_execute_curl("public_keys." . $this->format);
 	}
 
 	/**
@@ -379,13 +379,13 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/public_key.html
 	 * @param integer $key_id
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_public_key($key_id) {
 		if(empty($key_id))
 			throw new InvalidArgumentException("Public key ID required");
 		
-		return $this->_execute_curl("public_keys", $key_id . ".xml");
+		return $this->_execute_curl("public_keys", $key_id . "." . $this->format);
 	}
 
 	/**
@@ -395,23 +395,42 @@ class BeanstalkAPI {
 	 * @param string $content
 	 * @param string $name [optional]
 	 * @param integer $user_id [optional] Defaults to current user
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_public_key($content, $name = NULL, $user_id = NULL) {
 		if(empty($content))
 			throw new InvalidArgumentException("Key content required");
 		
-		$xml = new SimpleXMLElement('<public-key></public-key>');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<public-key></public-key>');
+			
+			$xml->addChild('content', $content);
+			
+			if(!is_null($name))
+				$xml->addChild('name', $name);
+			
+			if(!is_null($user_id))
+				$xml->addChild('user-id', $user_id);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('public-key' => array());
+			
+			$data_array['public-key']['content'] = $content;
+			
+			if(!is_null($name))
+				$data_array['public-key']['name'] = $name;
+			
+			if(!is_null($user_id))
+				$data_array['public-key']['user-id'] = $user_id;
+			
+			$data = json_encode($data_array);
+		}
 		
-		$xml->addChild('content', $content);
-		
-		if(!is_null($name))
-			$xml->addChild('name', $name);
-		
-		if(!is_null($user_id))
-			$xml->addChild('user-id', $user_id);
-		
-		return $this->_execute_curl("public_keys.xml", NULL, "POST", $xml->asXml());
+		return $this->_execute_curl("public_keys." . $this->format, NULL, "POST", $data);
 	}
 
 	/**
@@ -420,7 +439,7 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/public_key.html
 	 * @param integer $key_id
 	 * @param array $params Accepts - content, name
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function update_public_key($key_id, $params = array()) {
 		if(empty($key_id))
@@ -429,15 +448,32 @@ class BeanstalkAPI {
 		if(count($params) == 0)
 			throw new InvalidArgumentException("Nothing to update");
 		
-		$xml = new SimpleXMLElement('<public-key></public-key>');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<public-key></public-key>');
+			
+			if(!is_null($params['content']))
+				$xml->addChild('content', $params['content']);
+			
+			if(!is_null($params['name']))
+				$xml->addChild('name', $params['name']);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('public-key' => array());
+			
+			if(!is_null($params['content']))
+				$data_array['public-key']['content'] = $params['content'];
+			
+			if(!is_null($params['name']))
+				$data_array['public-key']['name'] = $params['name'];
+			
+			$data = json_encode($data_array);
+		}
 		
-		if(!is_null($params['content']))
-			$xml->addChild('content', $params['content']);
-
-		if(!is_null($params['name']))
-			$xml->addChild('name', $params['name']);
-		
-		return $this->_execute_curl("public_keys", $key_id . ".xml", "PUT", $xml->asXml());
+		return $this->_execute_curl("public_keys", $key_id . "." . $this->format, "PUT", $data);
 	}
 
 	/**
@@ -445,13 +481,13 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/public_key.html
 	 * @param integer $key_id
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function delete_public_key($key_id) {
 		if(empty($key_id))
 			throw new InvalidArgumentException("Public key ID required");
 		
-		return $this->_execute_curl("public_keys", $key_id . ".xml", "DELETE");
+		return $this->_execute_curl("public_keys", $key_id . "." . $this->format, "DELETE");
 	}
 
 
