@@ -1341,18 +1341,18 @@ class BeanstalkAPI {
 	 * @param integer $repo_id [optional] Releases from specified repository
 	 * @param integer $page [optional] Current page of results
 	 * @param integer $per_page [optional] Results per page - default 10, max 50
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_releases($repo_id = NULL, $page = 1, $per_page = 10) {
 		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
 		
 		if(empty($repo_id))
 		{
-			return $this->_execute_curl("releases.xml?page=" . $page . "&per_page=" . $per_page, NULL);
+			return $this->_execute_curl("releases." . $this->format . "?page=" . $page . "&per_page=" . $per_page, NULL);
 		}
 		else
 		{
-			return $this->_execute_curl($repo_id, "releases.xml?page=" . $page . "&per_page=" . $per_page);
+			return $this->_execute_curl($repo_id, "releases." . $this->format . "?page=" . $page . "&per_page=" . $per_page);
 		}
 	}
 
@@ -1362,13 +1362,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/release.html
 	 * @param integer $repo_id		required
 	 * @param integer $release_id	required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_release($repo_id, $release_id) {
 		if(empty($repo_id) || empty($release_id))
 			throw new InvalidArgumentException("Repository ID and release ID required");
 		
-		return $this->_execute_curl($repo_id, "releases/" . $release_id . ".xml");
+		return $this->_execute_curl($repo_id, "releases/" . $release_id . "." . $this->format);
 	}
 
 	/**
@@ -1380,21 +1380,36 @@ class BeanstalkAPI {
 	 * @param integer $revision_id
 	 * @param string $comment [optional]
 	 * @param bool $deploy_from_scratch [optional]
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_release($repo_id, $environment_id, $revision_id, $comment = '', $deploy_from_scratch = false) {
 		if(empty($repo_id) || empty($environment_id) || empty($revision_id))
 			throw new InvalidArgumentException("Repository ID, server environment ID and revision required");
 		
-		$xml = new SimpleXMLElement('<release></release>');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<release></release>');
+	
+			$revision_xml = $xml->addChild('revision', $revision_id);
+			$revision_xml->addAttribute('type', 'integer');
+	
+			$xml->addChild('comment', $comment);
+			$xml->addChild('deploy-from-scratch', $deploy_from_scratch);
+
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('release' => array());
+			
+			$data_array['release']['revision'] = $revision_id;
+			$data_array['release']['comment'] = $comment;
+			$data_array['release']['deploy-from-scratch'] = $deploy_from_scratch;
+	
+			$data = json_encode($data_array);
+		}
 		
-		$revision_xml = $xml->addChild('revision', $revision_id);
-		$revision_xml->addAttribute('type', 'integer');
-		
-		$xml->addChild('comment', $comment);
-		$xml->addChild('deploy-from-scratch', $deploy_from_scratch);
-		
-		return $this->_execute_curl($repo_id, "releases.xml?environment_id=" . $environment_id, "POST", $xml->asXml());
+		return $this->_execute_curl($repo_id, "releases." . $this->format . "?environment_id=" . $environment_id, "POST", $data);
 	}
 
 	/**
@@ -1403,13 +1418,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/release.html
 	 * @param integer $repo_id
 	 * @param integer $release_id
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function retry_release($repo_id, $release_id) {
 		if(empty($repo_id) || empty($release_id))
 			throw new InvalidArgumentException("Repository ID and release ID required");
 		
-		return $this->_execute_curl($repo_id, "releases/" . $release_id . "/retry.xml", "PUT");
+		return $this->_execute_curl($repo_id, "releases/" . $release_id . "/retry." . $this->format, "PUT");
 	}
 
 
