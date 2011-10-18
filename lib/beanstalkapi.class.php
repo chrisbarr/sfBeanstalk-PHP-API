@@ -933,13 +933,13 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/server_environment.html
 	 * @param integer $repo_id		required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_server_environments($repo_id) {
 		if(empty($repo_id))
 			throw new InvalidArgumentException("Repository ID required");
 		else
-			return $this->_execute_curl($repo_id, "server_environments.xml");
+			return $this->_execute_curl($repo_id, "server_environments." . $this->format);
 	}
 
 	/**
@@ -948,13 +948,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/server_environment.html
 	 * @param integer $repo_id		required
 	 * @param integer $environment_id	required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_server_environment($repo_id, $environment_id) {
 		if(empty($repo_id) || empty($environment_id))
 			throw new InvalidArgumentException("Repository ID required");
 		else
-			return $this->_execute_curl($repo_id, "server_environments/" . $environment_id . ".xml");
+			return $this->_execute_curl($repo_id, "server_environments/" . $environment_id . "." . $this->format);
 	}
 
 	/**
@@ -966,24 +966,44 @@ class BeanstalkAPI {
 	 * @param bool $automatic [optional]
 	 * @param string $branch_name [optional] Git only
 	 * @param string $color_label [optional] Accepts - red, orange, yellow, green, blue, pink, grey
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_server_environment($repo_id, $name, $automatic = false, $branch_name = NULL, $color_label = NULL) {
 		if(empty($repo_id) || empty($name) || ($automatic !== false && $automatic !== true))
 			throw new InvalidArgumentException("Repository ID, name and deploy automatically required");
 		
-		$xml = new SimpleXMLElement('<server-environment></server-environment>');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<server-environment></server-environment>');
+			
+			$xml->addChild('name', $name);
+			$xml->addChild('automatic', $automatic);
+			
+			if(!is_null($branch_name))
+				$xml->addChild('branch-name', $branch_name);
+			
+			if(!is_null($color_label))
+				$xml->addChild('color-label', 'color-' . $color_label);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('server-environment' => array());
+			
+			$data_array['server-environment']['name'] = $name;
+			$data_array['server-environment']['automatic'] = $automatic;
+			
+			if(!is_null($branch_name))
+				$data_array['server-environment']['branch-name'] = $branch_name;
+			
+			if(!is_null($color_label))
+				$data_array['server-environment']['color-label'] = 'color-' . $color_label;
+			
+			$data = json_encode($data_array);
+		}
 		
-		$xml->addChild('name', $name);
-		$xml->addChild('automatic', $automatic);
-		
-		if(!is_null($branch_name))
-			$xml->addChild('branch-name', $branch_name);
-		
-		if(!is_null($color_label))
-			$xml->addChild('color-label', 'color-' . $color_label);
-		
-		return $this->_execute_curl($repo_id, "server_environments.xml", "POST", $xml->asXml());
+		return $this->_execute_curl($repo_id, "server_environments." . $this->format, "POST", $data);
 	}
 
 	/**
@@ -993,7 +1013,7 @@ class BeanstalkAPI {
 	 * @param integer $repo_id
 	 * @param integer $environment_id
 	 * @param array $params Accepts - name, automatic, branch_name
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function update_server_environment($repo_id, $environment_id, $params = array()) {
 		if(empty($repo_id) || empty($environment_id))
@@ -1002,18 +1022,38 @@ class BeanstalkAPI {
 		if(count($params) == 0)
 			throw new InvalidArgumentException("Nothing to update");
 		
-		$xml = new SimpleXMLElement('<server-environment></server-environment>');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<server-environment></server-environment>');
+			
+			if(isset($params['name']))
+				$xml->addChild('name', $params['name']);
+			
+			if(isset($params['automatic']))
+				$xml->addChild('automatic', $params['automatic']);
+			
+			if(isset($params['branch_name']))
+				$xml->addChild('branch-name', $params['branch_name']);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('server-environment' => array());
+			
+			if(isset($params['name']))
+				$data_array['server-environment']['name'] = $params['name'];
+			
+			if(isset($params['automatic']))
+				$data_array['server-environment']['automatic'] = $params['automatic'];
+			
+			if(isset($params['branch_name']))
+				$data_array['server-environment']['branch-name'] = $params['branch_name'];
+			
+			$data = json_encode($data_array);
+		}
 		
-		if(isset($params['name']))
-			$xml->addChild('name', $params['name']);
-		
-		if(isset($params['automatic']))
-			$xml->addChild('automatic', $params['automatic']);
-		
-		if(isset($params['branch_name']))
-			$xml->addChild('branch-name', $params['branch_name']);
-		
-		return $this->_execute_curl($repo_id, "server_environments/" . $environment_id . ".xml", "PUT", $xml->asXml());
+		return $this->_execute_curl($repo_id, "server_environments/" . $environment_id . "." . $this->format, "PUT", $data);
 	}
 
 
