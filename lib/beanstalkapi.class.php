@@ -1067,13 +1067,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/release_server.html
 	 * @param integer $repo_id		required
 	 * @param integer $environment_id	required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	function find_all_release_servers($repo_id, $environment_id) {
 		if(empty($repo_id) || empty($environment_id))
 			throw new InvalidArgumentException("Repository ID and environment ID required");
 		else
-			return $this->_execute_curl($repo_id, "release_servers.xml?environment_id=" . $environment_id);
+			return $this->_execute_curl($repo_id, "release_servers." . $this->format . "?environment_id=" . $environment_id);
 	}
 
 	/**
@@ -1082,13 +1082,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/release_server.html
 	 * @param integer $repo_id		required
 	 * @param integer $server_id		required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_release_server($repo_id, $server_id) {
 		if(empty($repo_id) || empty($server_id))
 			throw new InvalidArgumentException("Repository ID and server ID required");
 		else
-			return $this->_execute_curl($repo_id, "release_servers/" . $server_id . ".xml");
+			return $this->_execute_curl($repo_id, "release_servers/" . $server_id . "." . $this->format);
 	}
 
 	/**
@@ -1110,51 +1110,98 @@ class BeanstalkAPI {
 	 * @param bool $use_feat [optional] Defaults to true
 	 * @param string $pre_release_hook [optional]
 	 * @param string $post_release_hook [optional]
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_release_server($repo_id, $environment_id, $name, $local_path, $remote_path, $remote_addr, $protocol = 'ftp', $port = 21, $login, $password, $use_active_mode = NULL, $authenticate_by_key = NULL, $use_feat = true, $pre_release_hook = NULL, $post_release_hook = NULL) {
 		if(empty($repo_id) || empty($environment_id) || empty($name) || empty($local_path) || empty($remote_path) || empty($remote_addr) || empty($protocol) || empty($port) || empty($login))
 			throw new InvalidArgumentException("Some required fields missing");
 		
-		$xml = new SimpleXMLElement('<release-server></release-server>');
-		
-		$xml->addChild('name', $name);
-		$xml->addChild('local-path', $local_path);
-		$xml->addChild('remote-path', $remote_path);
-		$xml->addChild('remote-addr', $remote_addr);
-		
-		$xml->addChild('login', $login);
-		
-		if($protocol == 'sftp') {
-			$xml->addChild('protocol', 'sftp');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<release-server></release-server>');
 			
-			if($authenticate_by_key == true) {
-				$xml->addChild('authenticate_by_key', true);
+			$xml->addChild('name', $name);
+			$xml->addChild('local-path', $local_path);
+			$xml->addChild('remote-path', $remote_path);
+			$xml->addChild('remote-addr', $remote_addr);
+			
+			$xml->addChild('login', $login);
+			
+			if($protocol == 'sftp') {
+				$xml->addChild('protocol', 'sftp');
+				
+				if($authenticate_by_key == true) {
+					$xml->addChild('authenticate_by_key', true);
+				}
+				else {
+					$xml->addChild('password', $password);
+				}
 			}
 			else {
+				$xml->addChild('protocol', 'ftp');
 				$xml->addChild('password', $password);
 			}
+			
+			$xml->addChild('port', $port);
+			
+			if(!is_null($use_active_mode))
+				$xml->addChild('use-active-mode', $use_active_mode);
+			
+			if(!is_null($use_feat))
+				$xml->addChild('use-feat', $use_feat); // True by default
+			
+			if(!is_null($pre_release_hook))
+				$xml->addChild('pre-release-hook', $pre_release_hook);
+			
+			if(!is_null($post_release_hook))
+				$xml->addChild('post-release-hook', $post_release_hook);
+			
+			$data = $xml->asXml();
 		}
-		else {
-			$xml->addChild('protocol', 'ftp');
-			$xml->addChild('password', $password);
+		else
+		{
+			$data_array = array('release-server' => array());
+			
+			$data_array['release-server']['name'] = $name;
+			$data_array['release-server']['local-path'] = $local_path;
+			$data_array['release-server']['remote-path'] = $remote_path;
+			$data_array['release-server']['remote-addr'] = $remote_addr;
+			
+			$data_array['release-server']['login'] = $login;
+			
+			if($protocol == 'sftp') {
+				$data_array['release-server']['protocol'] = 'sftp';
+				
+				if($authenticate_by_key == true) {
+					$data_array['release-server']['authenticate-by-key'] = true;
+				}
+				else {
+					$data_array['release-server']['password'] = $password;
+				}
+			}
+			else {
+				$data_array['release-server']['protocol'] = 'ftp';
+				$data_array['release-server']['password'] = $password;
+			}
+			
+			$data_array['release-server']['port'] = $port;
+			
+			if(!is_null($use_active_mode))
+				$data_array['release-server']['use-active-mode'] = $use_active_mode;
+			
+			if(!is_null($use_feat))
+				$data_array['release-server']['use-feat'] = $use_feat; // True by default
+			
+			if(!is_null($pre_release_hook))
+				$data_array['release-server']['pre-release-hook'] = $pre_release_hook;
+			
+			if(!is_null($post_release_hook))
+				$data_array['release-server']['post-release-hook'] = $post_release_hook;
+			
+			$data = json_encode($data_array);
 		}
 		
-		$xml->addChild('port', $port);
-		
-		if(!is_null($use_active_mode))
-			$xml->addChild('use-active-mode', $use_active_mode);
-		
-		if(!is_null($use_feat))
-			$xml->addChild('use-feat', $use_feat); // True by default
-		
-		if(!is_null($pre_release_hook))
-			$xml->addChild('pre-release-hook', $pre_release_hook);
-		
-		if(!is_null($post_release_hook))
-			$xml->addChild('post-release-hook', $post_release_hook);
-		
-		return $this->_execute_curl($repo_id, "release_servers.xml?environment_id=" . $environment_id, "POST", $xml->asXml());
+		return $this->_execute_curl($repo_id, "release_servers." . $this->format . "?environment_id=" . $environment_id, "POST", $data);
 	}
 
 	/**
@@ -1164,7 +1211,7 @@ class BeanstalkAPI {
 	 * @param integer $repo_id
 	 * @param integer $server_id
 	 * @param array $params Accepts - name, local_path, remote_path, remote_addr, protocol, port, login, password, use_active_mode, authenticate_by_key, use_feat, pre_release_hook, post_release_hook
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function update_release_server($repo_id, $server_id, $params = array()) {
 		if(empty($repo_id) || empty($server_id))
@@ -1173,48 +1220,98 @@ class BeanstalkAPI {
 		if(count($params) == 0)
 			throw new InvalidArgumentException("Nothing to update");
 		
-		$xml = new SimpleXMLElement('<release-server></release-server>');
-		
-		if(!is_null($params['name']))
-			$xml->addChild('name', $params['name']);
-		
-		if(!is_null($params['local_path']))
-			$xml->addChild('local-path', $params['local_path']);
-		
-		if(!is_null($params['remote_path']))
-			$xml->addChild('remote-path', $params['remote_path']);
-		
-		if(!is_null($params['remote_addr']))
-			$xml->addChild('remote-addr', $params['remote_addr']);
-		
-		if(!is_null($params['protocol']))
-			$xml->addChild('protocol', $params['protocol']);
-		
-		if(!is_null($params['port']))
-			$xml->addChild('port', $params['port']);
-		
-		if(!is_null($params['login']))
-			$xml->addChild('login', $params['login']);
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<release-server></release-server>');
+	
+			if(!is_null($params['name']))
+				$xml->addChild('name', $params['name']);
+	
+			if(!is_null($params['local_path']))
+				$xml->addChild('local-path', $params['local_path']);
+	
+			if(!is_null($params['remote_path']))
+				$xml->addChild('remote-path', $params['remote_path']);
+	
+			if(!is_null($params['remote_addr']))
+				$xml->addChild('remote-addr', $params['remote_addr']);
+	
+			if(!is_null($params['protocol']))
+				$xml->addChild('protocol', $params['protocol']);
+	
+			if(!is_null($params['port']))
+				$xml->addChild('port', $params['port']);
+	
+			if(!is_null($params['login']))
+				$xml->addChild('login', $params['login']);
 
-		if(!is_null($params['password']))
-			$xml->addChild('password', $params['password']);
+			if(!is_null($params['password']))
+				$xml->addChild('password', $params['password']);
 
-		if(!is_null($params['use_active_mode']))
-			$xml->addChild('use-active-mode', $params['use_active_mode']);
+			if(!is_null($params['use_active_mode']))
+				$xml->addChild('use-active-mode', $params['use_active_mode']);
 
-		if(!is_null($params['authenticate_by_key']))
-			$xml->addChild('authenticate-by-key', $params['authenticate_by_key']);
+			if(!is_null($params['authenticate_by_key']))
+				$xml->addChild('authenticate-by-key', $params['authenticate_by_key']);
 
-		if(!is_null($params['use_feat']))
-			$xml->addChild('use-feat', $params['use_feat']);
+			if(!is_null($params['use_feat']))
+				$xml->addChild('use-feat', $params['use_feat']);
 
-		if(!is_null($params['pre_release_hook']))
-			$xml->addChild('pre-release-hook', $params['pre_release_hook']);
+			if(!is_null($params['pre_release_hook']))
+				$xml->addChild('pre-release-hook', $params['pre_release_hook']);
 
-		if(!is_null($params['post_release_hook']))
-			$xml->addChild('post-release-hook', $params['post_release_hook']);
+			if(!is_null($params['post_release_hook']))
+				$xml->addChild('post-release-hook', $params['post_release_hook']);
+
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('release-server' => array());
+			
+			if(!is_null($params['name']))
+				$data_array['release-server']['name'] = $params['name'];
+			
+			if(!is_null($params['local_path']))
+				$data_array['release-server']['local-path'] = $params['local_path'];
+			
+			if(!is_null($params['remote_path']))
+				$data_array['release-server']['remote-path'] = $params['remote_path'];
+			
+			if(!is_null($params['remote_addr']))
+				$data_array['release-server']['remote-addr'] = $params['remote_addr'];
+			
+			if(!is_null($params['protocol']))
+				$data_array['release-server']['protocol'] = $params['protocol'];
+			
+			if(!is_null($params['port']))
+				$data_array['release-server']['port'] = $params['port'];
+			
+			if(!is_null($params['login']))
+				$data_array['release-server']['login'] = $params['login'];
+			
+			if(!is_null($params['password']))
+				$data_array['release-server']['password'] = $params['password'];
+			
+			if(!is_null($params['use_active_mode']))
+				$data_array['release-server']['use-active-mode'] = $params['use_active_mode'];
+			
+			if(!is_null($params['authenticate_by_key']))
+				$data_array['release-server']['authenticate-by-key'] = $params['authenticate_by_key'];
+			
+			if(!is_null($params['use_feat']))
+				$data_array['release-server']['use-feat'] = $params['use_feat'];
+			
+			if(!is_null($params['pre_release_hook']))
+				$data_array['release-server']['pre-release-hook'] = $params['pre_release_hook'];
+			
+			if(!is_null($params['post_release_hook']))
+				$data_array['release-server']['post-release-hook'] = $params['post_release_hook'];
+	
+			$data = json_encode($data_array);
+		}
 		
-		return $this->_execute($repo_id, "release_servers/" . $server_id . ".xml", "PUT", $xml->asXml());
+		return $this->_execute($repo_id, "release_servers/" . $server_id . "." . $this->format, "PUT", $data);
 	}
 
 	/**
@@ -1223,13 +1320,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/release_server.html
 	 * @param integer $repo_id
 	 * @param integer $server_id
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function delete_release_server($repo_id, $server_id) {
 		if(empty($repo_id) || empty($server_id))
 			throw new InvalidArgumentException("Repository ID and release server ID required");
 		
-		return $this->_execute_curl($repo_id, "release_servers/" . $server_id . ".xml", "DELETE");
+		return $this->_execute_curl($repo_id, "release_servers/" . $server_id . "." . $this->format, "DELETE");
 	}
 
 
