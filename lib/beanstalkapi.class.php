@@ -639,13 +639,13 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/permissions.html
 	 * @param integer $user_id
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_user_permissions($user_id) {
 		if(empty($user_id))
 			throw new InvalidArgumentException("User ID required");
 		
-		return $this->_execute_curl("permissions", $user_id . ".xml");
+		return $this->_execute_curl("permissions", $user_id . "." . $this->format);
 	}
 
 	/**
@@ -658,47 +658,79 @@ class BeanstalkAPI {
 	 * @param bool $write [optional]
 	 * @param bool $full_deployments_access [optional] Gives full deployment access to a repository
 	 * @param integer $server_environment_id [optional] Give deployment access only to a specific server environment
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_user_permissions($user_id, $repo_id, $read = false, $write = false, $full_deployments_access = false, $server_environment_id = NULL) {
 		if(empty($user_id) || empty($repo_id))
 			throw new InvalidArgumentException("Some required fields missing");
 		
-		$xml = new SimpleXMLElement('<permission></permission>');
-		
-		$user_xml = $xml->addChild('user-id', $user_id);
-		$user_xml->addAttribute('type', 'integer');
-		
-		$repo_xml = $xml->addChild('repository-id', $repo_id);
-		$repo_xml->addAttribute('type', 'integer');
-		
-		if($read === true)
-			$read_xml = $xml->addChild('read', 'true');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<permission></permission>');
+			
+			$user_xml = $xml->addChild('user-id', $user_id);
+			$user_xml->addAttribute('type', 'integer');
+			
+			$repo_xml = $xml->addChild('repository-id', $repo_id);
+			$repo_xml->addAttribute('type', 'integer');
+			
+			if($read === true)
+				$read_xml = $xml->addChild('read', 'true');
+			else
+				$read_xml = $xml->addChild('read', 'false');
+			
+			$read_xml->addAttribute('type', 'boolean');
+			
+			if($write === true)
+				$write_xml = $xml->addChild('write', 'true');
+			else
+				$write_xml = $xml->addChild('write', 'false');
+			
+			$write_xml->addAttribute('type', 'boolean');
+			
+			if($full_deployments_access === true)
+				$full_deploy_xml = $xml->addChild('full-deployments-access', 'true');
+			else
+				$full_deploy_xml = $xml->addChild('full-deployments-access', 'false');
+			
+			$full_deploy_xml->addAttribute('type', 'boolean');
+			
+			if(!is_null($server_environment_id)) {
+				$environment_xml = $xml->addChild('server-environment-id', $server_environment_id);
+				$environment_xml->addAttribute('type', 'integer');
+			}
+			
+			$data = $xml->asXml();
+		}
 		else
-			$read_xml = $xml->addChild('read', 'false');
-		
-		$read_xml->addAttribute('type', 'boolean');
-		
-		if($write === true)
-			$write_xml = $xml->addChild('write', 'true');
-		else
-			$write_xml = $xml->addChild('write', 'false');
-		
-		$write_xml->addAttribute('type', 'boolean');
-		
-		if($full_deployments_access === true)
-			$full_deploy_xml = $xml->addChild('full-deployments-access', 'true');
-		else
-			$full_deploy_xml = $xml->addChild('full-deployments-access', 'false');
-		
-		$full_deploy_xml->addAttribute('type', 'boolean');
-		
-		if(!is_null($server_environment_id)) {
-			$environment_xml = $xml->addChild('server-environment-id', $server_environment_id);
-			$environment_xml->addAttribute('type', 'integer');
+		{
+			$data_array = array('permission' => array());
+			
+			$data_array['permission']['user-id'] = $user_id;
+			$data_array['permission']['repository-id'] = $repo_id;
+			
+			if($read === true)
+				$data_array['permission']['read'] = true;
+			else
+				$data_array['permission']['read'] = false;
+			
+			if($write === true)
+				$data_array['permission']['write'] = true;
+			else
+				$data_array['permission']['write'] = false;
+			
+			if($full_deployments_access === true)
+				$data_array['permission']['full-deployments-access'] = true;
+			else
+				$data_array['permission']['full-deployments-access'] = false;
+			
+			if(!is_null($server_environment_id))
+				$data_array['permission']['server-environment-id'] = $server_environment_id;
+			
+			$data = json_encode($data_array);
 		}
 		
-		return $this->_execute_curl("permissions.xml", NULL, "POST", $xml->asXml());
+		return $this->_execute_curl("permissions." . $this->format, NULL, "POST", $data);
 	}
 
 	/**
@@ -706,13 +738,13 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/permissions.html
 	 * @param integer $permission_id
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function delete_user_permissions($permission_id) {
 		if(empty($permission_id))
 			throw new InvalidArgumentException("Permission ID required");
 		
-		return $this->_execute_curl("permissions", $permission_id . ".xml", "DELETE");
+		return $this->_execute_curl("permissions", $permission_id . "." . $this->format, "DELETE");
 	}
 
 
