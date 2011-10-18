@@ -63,7 +63,7 @@ class BeanstalkAPI {
 	 * @return SimpleXMLElement
 	 */
 	public function get_account_details() {
-		return $this->_execute_curl("account.xml");
+		return $this->_execute_curl("account." . $this->format);
 	}
 
 	/**
@@ -77,15 +77,32 @@ class BeanstalkAPI {
 		if(count($params) == 0)
 			throw new InvalidArgumentException("Nothing to update");
 		
-		$xml = new SimpleXMLElement("<account></account>");
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement("<account></account>");
+			
+			if(isset($params['name']))
+				$xml->addChild('name', $params['name']);
 		
-		if(isset($params['name']))
-			$xml->addChild('name', $params['name']);
+			if(isset($params['timezone']))
+				$xml->addChild('time-zone', $params['timezone']); // Inconsistency in API?
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('account' => array());
+			
+			if(isset($params['name']))
+				$data_array['account']['name'] = $params['name'];
+			
+			if(isset($params['timezone']))
+				$data_array['account']['time-zone'] = $params['timezone'];
+			
+			$data = json_encode($data_array);
+		}
 		
-		if(isset($params['timezone']))
-			$xml->addChild('time-zone', $params['timezone']); // Inconsistency in API?
-		
-		return $this->_execute_curl("account.xml", NULL, "PUT", $xml->asXml());
+		return $this->_execute_curl("account." . $this->format, NULL, "PUT", $data);
 	}
 
 
