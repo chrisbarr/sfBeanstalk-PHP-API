@@ -817,7 +817,7 @@ class BeanstalkAPI {
 	 * @param integer $repo_id		required
 	 * @param integer $page [optional] Current page of results
 	 * @param integer $per_page [optional] Results per page - default 15, max 50
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_comments($repo_id, $page = 1, $per_page = 15) {
 		if(empty($repo_id))
@@ -825,7 +825,7 @@ class BeanstalkAPI {
 		
 		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
 		
-		return $this->_execute_curl($repo_id, "comments.xml?page=" . $page . "&per_page=" . $per_page);
+		return $this->_execute_curl($repo_id, "comments." . $this->format . "?page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -836,7 +836,7 @@ class BeanstalkAPI {
 	 * @param integer $revision		required
 	 * @param integer $page [optional] Current page of results
 	 * @param integer $per_page [optional] Results per page - default 15, max 50
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_changeset_comments($repo_id, $revision, $page = 1, $per_page = 15) {
 		if(empty($repo_id) || empty($revision))
@@ -844,7 +844,7 @@ class BeanstalkAPI {
 		
 		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
 		
-		return $this->_execute_curl($repo_id, "comments.xml?revision=" . $revision . "&page=" . $page . "&per_page=" . $per_page);
+		return $this->_execute_curl($repo_id, "comments." . $this->format . "?revision=" . $revision . "&page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -854,7 +854,7 @@ class BeanstalkAPI {
 	 * @param integer $user_id
 	 * @param integer $page [optional] Current page of results
 	 * @param integer $per_page [optional] Results per page - default 15, max 50
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_user_comments($user_id, $page = 1, $per_page = 15) {
 		if(empty($user_id))
@@ -862,7 +862,7 @@ class BeanstalkAPI {
 		
 		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
 		
-		return $this->_execute_curl("comments", "user.xml?user_id=" . $user_id . "&page=" . $page . "&per_page=" . $per_page);
+		return $this->_execute_curl("comments", "user." . $this->format . "?user_id=" . $user_id . "&page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -871,13 +871,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/comment.html
 	 * @param integer $repo_id		required
 	 * @param integer $revision		required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_comment($repo_id, $comment_id) {
 		if(empty($repo_id) || empty($comment_id))
 			throw new InvalidArgumentException("Repository ID and comment ID required");
 		else
-			return $this->_execute_curl($repo_id, "comments/" . $comment_id . ".xml");
+			return $this->_execute_curl($repo_id, "comments/" . $comment_id . "." . $this->format);
 	}
 
 	/**
@@ -889,22 +889,38 @@ class BeanstalkAPI {
 	 * @param string $body
 	 * @param string $file_path
 	 * @param integer $line_number
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_comment($repo_id, $revision_id, $body, $file_path, $line_number) {
 		if(empty($repo_id) || empty($revision_id) || empty($body) || empty($file_path) || empty($line_number))
 			throw new InvalidArgumentException("Some required fields missing");
-
-		$xml = new SimpleXMLElement('<comment></comment>');
-
-		$revision_xml = $xml->addChild('revision', $revision_id);
-		$revision_xml->addAttribute('type', 'integer');
-
-		$xml->addChild('body', $body);
-		$xml->addChild('file-path', $file_path);
-		$xml->addChild('line-number', $line_number); // Should this have type attribute set as well?
-
-		return $this->_execute_curl($repo_id, "comments.xml", "POST", $xml->asXml());
+		
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<comment></comment>');
+			
+			$revision_xml = $xml->addChild('revision', $revision_id);
+			$revision_xml->addAttribute('type', 'integer');
+			
+			$xml->addChild('body', $body);
+			$xml->addChild('file-path', $file_path);
+			$xml->addChild('line-number', $line_number); // Should this have type attribute set as well?
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('comment' => array());
+			
+			$data_array['comment']['revision'] = $revision_id;
+			$data_array['comment']['body'] = $body;
+			$data_array['comment']['file-path'] = $file_path;
+			$data_array['comment']['line-number'] = $line_number;
+			
+			$data = json_encode($data_array);
+		}
+		
+		return $this->_execute_curl($repo_id, "comments." . $this->format, "POST", $data);
 	}
 
 
