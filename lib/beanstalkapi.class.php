@@ -760,13 +760,13 @@ class BeanstalkAPI {
 	 * @param integer $per_page [optional] Results per page - default 15, max 30
 	 * @param string $order_field [optioanl] Order results by a field - default 'time'
 	 * @param string $order [optional] Order direction - can be ASC or DESC - default 'DESC'
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_changesets($page = 1, $per_page = 15, $order_field = 'time', $order = 'DESC') {
 		$per_page = intval($per_page) > 30 ? 30 : intval($per_page);
 		$order = strtoupper($order) == 'ASC' ? 'ASC' : 'DESC';
 		
-		return $this->_execute_curl("changesets.xml?page=" . $page . "&per_page=" . $per_page . "&order_field" . $order_field . "&order=" . $order);
+		return $this->_execute_curl("changesets." . $this->format . "?page=" . $page . "&per_page=" . $per_page . "&order_field" . $order_field . "&order=" . $order);
 	}
 
 	/**
@@ -778,7 +778,7 @@ class BeanstalkAPI {
 	 * @param integer $per_page [optional] Set results per page - default 15
 	 * @param string $order_field [optioanl] Order results by a field - default 'time'
 	 * @param string $order [optional] Order direction - can be ASC or DESC - default 'DESC'
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_repository_changesets($repo_id, $page = 1, $per_page = 15, $order_field = 'time', $order = 'DESC') {
 		if(empty($repo_id))
@@ -787,7 +787,7 @@ class BeanstalkAPI {
 		$per_page = intval($per_page) > 30 ? 30 : intval($per_page);
 		$order = strtoupper($order) == 'ASC' ? 'ASC' : 'DESC';
 		
-		return $this->_execute_curl("changesets", "repository.xml?repository_id=" . $repo_id . "&page=" . $page . "&per_page=" . $per_page . "&order_field" . $order_field . "&order=" . $order);
+		return $this->_execute_curl("changesets", "repository." . $this->format . "?repository_id=" . $repo_id . "&page=" . $page . "&per_page=" . $per_page . "&order_field" . $order_field . "&order=" . $order);
 	}
 
 	/**
@@ -796,13 +796,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/changeset.html
 	 * @param integer $repo_id		required
 	 * @param integer $revision		required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_changeset($repo_id, $revision) {
 		if(empty($repo_id) || empty($revision))
 			throw new InvalidArgumentException("Changeset ID and repository ID required");
 		else
-			return $this->_execute_curl("changesets", $revision . ".xml?repository_id=" . $repo_id);
+			return $this->_execute_curl("changesets", $revision . "." . $this->format . "?repository_id=" . $repo_id);
 	}
 
 
