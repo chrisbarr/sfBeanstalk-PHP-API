@@ -550,7 +550,7 @@ class BeanstalkAPI {
 			$xml->addChild('title', $title);
 		
 			if(!is_null($create_structure))
-				$xml->addChild('create_structure', $create_structure);
+				$xml->addChild('create-structure', $create_structure);
 		
 			if(!is_null($color_label))
 				$xml->addChild('color-label', "label-" . $color_label);
@@ -569,7 +569,7 @@ class BeanstalkAPI {
 			$data_array['repository']['title'] = $title;
 			
 			if(!is_null($create_structure))
-				$data_array['repository']['create_structure'] = $create_structure;
+				$data_array['repository']['create-structure'] = $create_structure;
 			
 			if(!is_null($color_label))
 				$data_array['repository']['color-label'] = "label-" . $color_label;
