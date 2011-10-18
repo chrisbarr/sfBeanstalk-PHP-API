@@ -501,12 +501,12 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/repository.html
 	 * @param integer $page [optional] Current page of results
 	 * @param integer $per_page [optional] Results per page - default 30, max 50
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_repositories($page = 1, $per_page = 30) {
 		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
 		
-		return $this->_execute_curl("repositories.xml?page=" . $page . "&per_page=" . $per_page);
+		return $this->_execute_curl("repositories." . $this->format . "?page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -514,13 +514,13 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/repository.html
 	 * @param integer $repo_id		required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_repository($repo_id) {
 		if(empty($repo_id))
 			throw new InvalidArgumentException("Repository ID required");
 		else
-			return $this->_execute_curl("repositories", $repo_id . ".xml");
+			return $this->_execute_curl("repositories", $repo_id . "." . $this->format);
 	}
 
 	/**
@@ -532,28 +532,52 @@ class BeanstalkAPI {
 	 * @param string $title
 	 * @param bool $create_structure [optional]
 	 * @param string $color_label [optional] Accepts - red, orange, yellow, green, blue, pink, grey
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_repository($name, $type_id = "subversion", $title, $create_structure = true, $color_label = "grey") {
 		if(empty($name) || empty($title))
 			throw new InvalidArgumentException("Repository name and title required");
-
-		$xml = new SimpleXMLElement('<repository></repository>');
-
-		$xml->addChild('name', $name);
-
-		if(!is_null($type_id))
-			$xml->addChild('type-id', $type_id);
-
-		$xml->addChild('title', $title);
-
-		if(!is_null($create_structure))
-			$xml->addChild('create_structure', $create_structure);
-
-		if(!is_null($color_label))
-			$xml->addChild('color-label', "label-" . $color_label);
-
-		return $this->_execute_curl("repositories.xml", NULL, "POST", $xml->asXml());
+		
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<repository></repository>');
+		
+			$xml->addChild('name', $name);
+		
+			if(!is_null($type_id))
+				$xml->addChild('type-id', $type_id);
+		
+			$xml->addChild('title', $title);
+		
+			if(!is_null($create_structure))
+				$xml->addChild('create_structure', $create_structure);
+		
+			if(!is_null($color_label))
+				$xml->addChild('color-label', "label-" . $color_label);
+		
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('repository' => array());
+			
+			$data_array['repository']['name'] = $name;
+			
+			if(!is_null($type_id))
+				$data_array['repository']['type-id'] = $type_id;
+			
+			$data_array['repository']['title'] = $title;
+			
+			if(!is_null($create_structure))
+				$data_array['repository']['create_structure'] = $create_structure;
+			
+			if(!is_null($color_label))
+				$data_array['repository']['color-label'] = "label-" . $color_label;
+			
+			$data = json_encode($data_array);
+		}
+		
+		return $this->_execute_curl("repositories." . $this->format, NULL, "POST", $data);
 	}
 
 	/**
@@ -562,7 +586,7 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/repository.html
 	 * @param integer $repo_id
 	 * @param array $params Accepts - name, title, color_label (red, orange, yellow, green, blue, pink, grey)
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function update_repository($repo_id, $params = array()) {
 		if(empty($repo_id))
@@ -571,18 +595,38 @@ class BeanstalkAPI {
 		if(count($params) == 0)
 			throw new InvalidArgumentException("Nothing to update");
 
-		$xml = new SimpleXMLElement('<repository></repository>');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<repository></repository>');
+			
+			if(isset($params['name']))
+				$xml->addChild('name', $params['name']);
+			
+			if(isset($params['title']))
+				$xml->addChild('title', $params['title']);
+			
+			if(isset($params['color-label']))
+				$xml->addChild('color-label', "label-" . $params['color-label']);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('repository' => array());
+			
+			if(isset($params['name']))
+				$data_array['repository']['name'] = $params['name'];
+			
+			if(isset($params['title']))
+				$data_array['repository']['title'] = $params['title'];
+			
+			if(isset($params['color-label']))
+				$data_array['repository']['color-label'] = "label-" . $params['color-label'];
+			
+			$data = json_encode($data_array);
+		}
 
-		if(isset($params['name']))
-			$xml->addChild('name', $params['name']);
-
-		if(isset($params['title']))
-			$xml->addChild('title', $params['title']);
-
-		if(isset($params['color-label']))
-			$xml->addChild('color-label', "label-" . $params['color-label']);
-
-		return $this->_execute_curl("repositories", $repo_id . ".xml", "PUT", $xml->asXml());
+		return $this->_execute_curl("repositories", $repo_id . "." . $this->format, "PUT", $data);
 	}
 
 
