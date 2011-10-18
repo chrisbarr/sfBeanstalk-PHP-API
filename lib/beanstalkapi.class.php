@@ -1083,7 +1083,7 @@ class BeanstalkAPI {
 		else
 			$ch = curl_init("https://" . $this->account_name . ".beanstalkapp.com/api/" . $api_name . "/" . $api_params);
 
-		$headers = array('Content-type: application/xml');
+		$headers = array('Content-type: application/' . $this->format);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_USERPWD, $this->username . ':' . $this->password);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION,1);
@@ -1117,8 +1117,16 @@ class BeanstalkAPI {
 		
 		curl_close($ch);
 		
-		// Process XML into SimpleXMLElement
-		return simplexml_load_string($data);
+		if($this->format == 'xml')
+		{
+			// Process XML into SimpleXMLElement
+			return simplexml_load_string($data);	
+		}
+		else
+		{
+			// Process JSON
+			return json_decode($data);
+		}
 	}
 }
 
