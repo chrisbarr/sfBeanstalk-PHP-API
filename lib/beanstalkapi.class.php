@@ -60,7 +60,7 @@ class BeanstalkAPI {
 	 * Returns Beanstalk account details.
 	 *
 	 * @link http://api.beanstalkapp.com/account.html
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function get_account_details() {
 		return $this->_execute_curl("account." . $this->format);
@@ -71,7 +71,7 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/account.html
 	 * @param array $params Accepts - name, timezone
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function update_account_details($params = array()) {
 		if(count($params) == 0)
@@ -114,10 +114,10 @@ class BeanstalkAPI {
 	 * Returns Beanstalk account plans
 	 *
 	 * @link http://api.beanstalkapp.com/plan.html
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_plans() {
-		return $this->_execute_curl("plans.xml");
+		return $this->_execute_curl("plans." . $this->format);
 	}
 
 
@@ -131,12 +131,12 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/user.html
 	 * @param integer $page [optional] Current page of results
 	 * @param integer $per_page [optional] Results per page - default 30, max 50
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_users($page = 1, $per_page = 30) {
 		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
 				
-		return $this->_execute_curl("users.xml?page=" . $page . "&per_page=" . $per_page);
+		return $this->_execute_curl("users." . $this->format . "?page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -144,23 +144,23 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/user.html
 	 * @param integer $user_id		required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_user($user_id) {
 		if(empty($user_id))
 			throw new InvalidArgumentException("User ID required");
 		else
-			return $this->_execute_curl("users", $user_id . ".xml");
+			return $this->_execute_curl("users", $user_id . "." . $this->format);
 	}
 
 	/**
 	 * Returns Beanstalk user currently being used to access the API
 	 *
 	 * @link http://api.beanstalkapp.com/user.html
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_current_user() {
-		return $this->_execute_curl("users", "current.xml");
+		return $this->_execute_curl("users", "current." . $this->format);
 	}
 
 	/**
@@ -174,25 +174,46 @@ class BeanstalkAPI {
 	 * @param string $password
 	 * @param int $admin [optional]
 	 * @param string $timezone [optional]
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_user($login, $email, $first_name, $last_name, $password, $admin = 0, $timezone = NULL) {
 		if(empty($login) || empty($email) || empty($first_name) || empty($last_name) || empty($password))
 			throw new InvalidArgumentException("Some required fields missing");
-
-		$xml = new SimpleXMLElement('<user></user>');
-
-		$xml->addChild('login', $login);
-		$xml->addChild('email', $email);
-		$xml->addChild('first-name', $first_name);
-		$xml->addChild('last-name', $last_name);
-		$xml->addChild('password', $password);
-		$xml->addChild('admin', $admin); // Should change to optional?
-
-		if(!is_null($timezone))
-			$xml->addChild('timezone', $timezone);
-
-		return $this->_execute_curl("users.xml", NULL, "POST", $xml->asXml());
+		
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<user></user>');
+			
+			$xml->addChild('login', $login);
+			$xml->addChild('email', $email);
+			$xml->addChild('first-name', $first_name);
+			$xml->addChild('last-name', $last_name);
+			$xml->addChild('password', $password);
+			$xml->addChild('admin', $admin); // Should change to optional?
+			
+			if(!is_null($timezone))
+				$xml->addChild('timezone', $timezone);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('user' => array());
+			
+			$data_array['user']['login'] = $login;
+			$data_array['user']['email'] = $email;
+			$data_array['user']['first-name'] = $first_name;
+			$data_array['user']['last-name'] = $last_name;
+			$data_array['user']['password'] = $password;
+			$data_array['user']['admin'] = $admin;
+			
+			if(isset($timezone))
+				$data_array['user']['timezone'] = $timezone;
+			
+			$data = json_encode($data_array);
+		}
+		
+		return $this->_execute_curl("users." . $this->format, NULL, "POST", $data);
 	}
 
 	/**
@@ -201,36 +222,65 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/user.html
 	 * @param integer $user_id
 	 * @param array $params Accepts - email, first_name, last_name, password, admin, timezone
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function update_user($user_id, $params = array()) {
 		if(empty($user_id))
 			throw new InvalidArgumentException("User ID required");
-
+		
 		if(count($params) == 0)
 			throw new InvalidArgumentException("Nothing to update");
-
-		$xml = new SimpleXMLElement('<user></user>');
-
-		if(isset($params['email']))
-			$xml->addChild('email', $params['email']);
-
-		if(isset($params['first_name']))
-			$xml->addChild('first-name', $params['first_name']);
-
-		if(isset($params['last_name']))
-			$xml->addChild('last-name', $params['last_name']);
-
-		if(isset($params['password']))
-			$xml->addChild('password', $params['password']);
-
-		if(isset($params['admin']))
-			$xml->addChild('admin', $params['admin']);
-
-		if(isset($params['timezone']))
-			$xml->addChild('timezone', $params['timezone']);
-
-		return $this->_execute_curl("users", $user_id . ".xml", "PUT", $xml->asXml());
+		
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<user></user>');
+			
+			if(isset($params['email']))
+				$xml->addChild('email', $params['email']);
+			
+			if(isset($params['first_name']))
+				$xml->addChild('first-name', $params['first_name']);
+			
+			if(isset($params['last_name']))
+				$xml->addChild('last-name', $params['last_name']);
+			
+			if(isset($params['password']))
+				$xml->addChild('password', $params['password']);
+			
+			if(isset($params['admin']))
+				$xml->addChild('admin', $params['admin']);
+			
+			if(isset($params['timezone']))
+				$xml->addChild('timezone', $params['timezone']);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('user' => array());
+			
+			if(isset($params['email']))
+				$data_array['user']['email'] = $params['email'];
+			
+			if(isset($params['first_name']))
+				$data_array['user']['first-name'] = $params['first_name'];
+			
+			if(isset($params['last_name']))
+				$data_array['user']['last-name'] = $params['last_name'];
+			
+			if(isset($params['password']))
+				$data_array['user']['password'] = $params['password'];
+			
+			if(isset($params['admin']))
+				$data_array['user']['admin'] = $params['admin'];
+			
+			if(isset($params['timezone']))
+				$data_array['user']['timezone'] = $params['timezone'];
+			
+			$data = json_encode($data_array);
+		}
+		
+		return $this->_execute_curl("users", $user_id . "." . $this->format, "PUT", $data);
 	}
 
 	/**
@@ -238,13 +288,13 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/user.html
 	 * @param integer $user_id
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function delete_user($user_id) {
 		if(empty($user_id))
 			throw new InvalidArgumentException("User ID required");
 
-		return $this->_execute_curl("users", $user_id . ".xml", "DELETE");
+		return $this->_execute_curl("users", $user_id . "." . $this->format, "DELETE");
 	}
 
 
