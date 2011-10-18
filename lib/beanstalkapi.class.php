@@ -305,14 +305,14 @@ class BeanstalkAPI {
 	/**
 	 * Return an invitation
 	 * @param integer $invitation_id
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_invitation($invitation_id)
 	{
 		if(empty($invitation_id))
 			throw new InvalidArgumentException("Invitation ID required");
 		
-		return $this->_execute_curl("invitations", $invitation_id . ".xml");
+		return $this->_execute_curl("invitations", $invitation_id . "." . $this->format);
 	}
 
 	/**
@@ -320,22 +320,39 @@ class BeanstalkAPI {
 	 * @param string $email
 	 * @param string $first_name
 	 * @param string $last_name
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_invitation($email, $first_name, $last_name)
 	{
 		if(empty($email) || empty($first_name) || empty($last_name))
 			throw new InvalidArgumentException("Some required fields missing");
 		
-		$xml = new SimpleXMLElement('<invitation></invitation>');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<invitation></invitation>');
+			
+			$user = $xml->addChild('user');
+			
+			$user->addChild('email', $email);
+			$user->addChild('first-name', $first_name);
+			$user->addChild('last-name', $last_name);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('invitation' => array());
+			
+			$data_array['invitation']['user'] = array();
+			
+			$data_array['invitation']['user']['email'] = $email;
+			$data_array['invitation']['user']['first-name'] = $first_name;
+			$data_array['invitation']['user']['last-name'] = $last_name;
+			
+			$data = json_encode($data_array);
+		}
 		
-		$user = $xml->addChild('user');
-		
-		$user->addChild('email', $email);
-		$user->addChild('first-name', $first_name);
-		$user->addChild('last-name', $last_name);
-		
-		return $this->_execute_curl("invitations.xml", NULL, "POST", $xml->asXml());
+		return $this->_execute_curl("invitations." . $this->format, NULL, "POST", $data);
 	}
 
 
