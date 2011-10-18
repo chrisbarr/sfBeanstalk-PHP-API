@@ -20,6 +20,9 @@ class BeanstalkAPI {
 	
 	public $error_code = '';
 	public $error_string = '';
+	
+	public $format = 'json';			// XML or JSON
+	
 
 	// ------------------------------------------------------------------------
 
@@ -29,9 +32,10 @@ class BeanstalkAPI {
 	 * @param string $account_name [optional]
 	 * @param string $username [optional]
 	 * @param string $password [optional]
+	 * @param string $format [optional] Defaults to json
 	 * @return void
 	 */
-	public function __construct($account_name = null, $username = null, $password = null) {
+	public function __construct($account_name = null, $username = null, $password = null, $format = 'json') {
 		if(!is_null($account_name))
 			$this->account_name = $account_name;
 		
@@ -43,6 +47,8 @@ class BeanstalkAPI {
 		
 		if(empty($this->account_name) || empty($this->username) || empty($this->password))
 			throw new InvalidArgumentException("Account name, username and password required");
+		
+		$this->format = strtolower($format) == 'json' ? 'json' : 'xml';
 	}
 
 
