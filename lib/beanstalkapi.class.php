@@ -487,14 +487,11 @@ class BeanstalkAPI {
 		if(empty($repo_id) || empty($import_url))
 			throw new InvalidArgumentException("Repository ID and import URL required");
 		
-		$xml = new SimpleXMLElement('<import></import>'); // Yet to be determined
+		$xml = new SimpleXMLElement('<repository-import></repository-import>');
 		
-		$xml->addChild('repository-id', $repo_id);
+		$xml->addChild('uri', $import_url);
 		
-		$repos_import = $xml->addChild('repository-import');
-		$repos_import->addChild('uri', $import_url);
-		
-		return $this->_execute_curl("repository_imports.xml", NULL, "POST", $xml->asXml());
+		return $this->_execute_curl($repo_id, "repository_imports.xml", "POST", $xml->asXml());
 	}
 
 
