@@ -631,6 +631,41 @@ class BeanstalkAPI {
 
 
 	//
+	// Repository Import
+	//
+
+	/**
+	 * Find an import - also returns the status of the import
+	 * @return SimpleXMLElement
+	 */
+	public function find_import($import_id)
+	{
+		if(empty($import_id))
+			throw new Exception("Import ID required");
+		
+		return $this->_execute_curl("repository_imports", $import_id . ".xml");
+	}
+
+	/**
+	 * Import an SVN dump into a repository
+	 * @param integer $repos_id
+	 * @param string $import_url
+	 * @return SimpleXMLElement
+	 */
+	public function create_import($repo_id, $import_url)
+	{
+		if(empty($repo_id) || empty($import_url))
+			throw new InvalidArgumentException("Repository ID and import URL required");
+		
+		$xml = new SimpleXMLElement('<repository-import></repository-import>');
+		
+		$xml->addChild('uri', $import_url);
+		
+		return $this->_execute_curl($repo_id, "repository_imports.xml", "POST", $xml->asXml());
+	}
+
+
+	//
 	// User Permissions
 	//
 
