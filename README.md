@@ -27,6 +27,12 @@ Make sure to put your account details in the appropriate places.
 
 Now call the API functions using the `$Beanstalk` variable, ie. `$Beanstalk->find_all_users();`
 
+The BeanstalkAPI object can use either XML or JSON to communicate with your Beanstalk account. By default it uses JSON, and will return an array as the response. If you want to use XML, create the object like this:
+
+	$Beanstalk = new BeanstalkAPI('ACCOUNT_NAME_HERE', 'USERNAME_HERE', 'PASSWORD_HERE', 'xml');
+
+and it will return a SimpleXMLElement.
+
 ### API Methods ###
 List of available function calls:
 
