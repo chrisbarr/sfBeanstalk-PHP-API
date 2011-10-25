@@ -1418,13 +1418,14 @@ class BeanstalkAPI {
 		
 		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
 		
+		// Should this be changed to array of query string params and use http_build_query() ?
 		if(is_null($environment_id))
 		{
-			return $this->_execute_curl();
+			return $this->_execute_curl($repo_id, "releases." . $this->format . "?page=" . $page . "&per_page=" . $per_page);
 		}
 		else
 		{
-			return $this->_execute_curl();
+			return $this->_execute_curl($repo_id, "releases." . $this->format . "?environment_id=" . $environment_id . "&page=" . $page . "&per_page=" . $per_page);
 		}
 	}
 
