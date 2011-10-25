@@ -650,7 +650,7 @@ class BeanstalkAPI {
 
 	/**
 	 * Import an SVN dump into a repository
-	 * @param integer $repos_id
+	 * @param integer $repo_id
 	 * @param string $import_url
 	 * @return SimpleXMLElement|array
 	 */
