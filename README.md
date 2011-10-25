@@ -107,7 +107,7 @@ Fetch a list of repositories:
 		print_r($repositories);
 	?>
 
-If there is a problem connecting to the API, the function will throw an Exception:
+If there is a problem connecting to the API, the function will throw an APIException:
 
 	<?php
 		require_once('lib/beanstalkapi.class.php');
@@ -120,9 +120,10 @@ If there is a problem connecting to the API, the function will throw an Exceptio
 			// This will only be executed if find_all_users() ran correctly
 			print_r($users);
 		}
-		catch(Exception $e)
+		catch(APIException $e)
 		{
 			echo 'Oops, there was a problem ' . $e->getMessage();
+			// Use $e->getCode() to get the returned HTTP status code of the exception
 		}
 	?>
 
