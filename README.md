@@ -1,4 +1,4 @@
-# Beanstalk PHP API v0.6.1 Documentation #
+# Beanstalk PHP API v0.7.2 Documentation #
 
 ## Installation ##
 Requires PHP 5, libcurl library and SimpleXML extension
@@ -27,6 +27,12 @@ Make sure to put your account details in the appropriate places.
 
 Now call the API functions using the `$Beanstalk` variable, ie. `$Beanstalk->find_all_users();`
 
+The BeanstalkAPI object can use either XML or JSON to communicate with your Beanstalk account. By default it uses JSON, and will return an array as the response. If you want to use XML, create the object like this:
+
+	$Beanstalk = new BeanstalkAPI('ACCOUNT_NAME_HERE', 'USERNAME_HERE', 'PASSWORD_HERE', 'xml');
+
+and it will return a SimpleXMLElement.
+
 ### API Methods ###
 List of available function calls:
 
@@ -39,6 +45,8 @@ List of available function calls:
 * `create_user(login, email, first_name, last_name, password);`
 * `update_user(user_id, params);`
 * `delete_user(user_id);`
+* `find_invitation(invitation_id);`
+* `create_invitation(email, first_name, last_name);`
 * `find_all_public_keys();`
 * `find_single_public_key(key_id);`
 * `create_public_key(content);`
@@ -48,6 +56,8 @@ List of available function calls:
 * `find_single_repository(repo_id);`
 * `create_repository(name, type_id, title);`
 * `update_repository(repo_id, params);`
+* `find_import(import_id);`
+* `create_import(repo_id, import_url);`
 * `find_user_permissions(user_id);`
 * `create_user_permissions(user_id, repo_id, read, write, full_deployments_access);`
 * `delete_user_permissions(user_id);`
@@ -68,7 +78,8 @@ List of available function calls:
 * `create_release_server(repo_id, environment_id, name, local_path, remote_path, remote_addr, protocol, port, login, password);`
 * `update_release_server(repo_id, server_id, params);`
 * `delete_release_server(repo_id, server_id);`
-* `find_all_releases(repo_id);`
+* `find_all_releases();`
+* `find_all_repository_releases(repo_id);`
 * `find_single_release(repo_id, release_id);`
 * `create_release(repo_id, revision_id);`
 * `retry_release(repo_id, release_id);`
@@ -96,7 +107,7 @@ Fetch a list of repositories:
 		print_r($repositories);
 	?>
 
-If there is a problem connecting to the API, the function will throw an Exception:
+If there is a problem connecting to the API, the function will throw an APIException:
 
 	<?php
 		require_once('lib/beanstalkapi.class.php');
@@ -109,9 +120,10 @@ If there is a problem connecting to the API, the function will throw an Exceptio
 			// This will only be executed if find_all_users() ran correctly
 			print_r($users);
 		}
-		catch(Exception $e)
+		catch(APIException $e)
 		{
 			echo 'Oops, there was a problem ' . $e->getMessage();
+			// Use $e->getCode() to get the returned HTTP status code of the exception
 		}
 	?>
 

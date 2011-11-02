@@ -6,7 +6,7 @@ namespace BeanstalkAPI;
  * PHP class for connecting to the Beanstalk API
  *
  * @link http://api.beanstalkapp.com/
- * @version 0.6.1
+ * @version 0.7.2
  */
 class BeanstalkAPI {
 	/**
@@ -22,6 +22,11 @@ class BeanstalkAPI {
 	
 	public $error_code = '';
 	public $error_string = '';
+	
+	public $curl_info = array();		// Stores info from last request
+	
+	public $format = 'json';			// XML or JSON
+	
 
 	// ------------------------------------------------------------------------
 
@@ -31,9 +36,10 @@ class BeanstalkAPI {
 	 * @param string $account_name [optional]
 	 * @param string $username [optional]
 	 * @param string $password [optional]
+	 * @param string $format [optional] Defaults to json
 	 * @return void
 	 */
-	public function __construct($account_name = null, $username = null, $password = null) {
+	public function __construct($account_name = null, $username = null, $password = null, $format = 'json') {
 		if(!is_null($account_name))
 			$this->account_name = $account_name;
 		
@@ -45,6 +51,8 @@ class BeanstalkAPI {
 		
 		if(empty($this->account_name) || empty($this->username) || empty($this->password))
 			throw new InvalidArgumentException("Account name, username and password required");
+		
+		$this->format = strtolower($format) == 'json' ? 'json' : 'xml';
 	}
 
 
@@ -56,10 +64,10 @@ class BeanstalkAPI {
 	 * Returns Beanstalk account details.
 	 *
 	 * @link http://api.beanstalkapp.com/account.html
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function get_account_details() {
-		return $this->_execute_curl("account.xml");
+		return $this->_execute_curl("account." . $this->format);
 	}
 
 	/**
@@ -67,21 +75,38 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/account.html
 	 * @param array $params Accepts - name, timezone
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function update_account_details($params = array()) {
 		if(count($params) == 0)
 			throw new InvalidArgumentException("Nothing to update");
 		
-		$xml = new SimpleXMLElement("<account></account>");
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement("<account></account>");
+			
+			if(isset($params['name']))
+				$xml->addChild('name', $params['name']);
 		
-		if(isset($params['name']))
-			$xml->addChild('name', $params['name']);
+			if(isset($params['timezone']))
+				$xml->addChild('time-zone', $params['timezone']); // Inconsistency in API?
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('account' => array());
+			
+			if(isset($params['name']))
+				$data_array['account']['name'] = $params['name'];
+			
+			if(isset($params['timezone']))
+				$data_array['account']['time-zone'] = $params['timezone'];
+			
+			$data = json_encode($data_array);
+		}
 		
-		if(isset($params['timezone']))
-			$xml->addChild('time-zone', $params['timezone']); // Inconsistency in API?
-		
-		return $this->_execute_curl("account.xml", NULL, "PUT", $xml->asXml());
+		return $this->_execute_curl("account." . $this->format, NULL, "PUT", $data);
 	}
 
 
@@ -93,10 +118,10 @@ class BeanstalkAPI {
 	 * Returns Beanstalk account plans
 	 *
 	 * @link http://api.beanstalkapp.com/plan.html
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_plans() {
-		return $this->_execute_curl("plans.xml");
+		return $this->_execute_curl("plans." . $this->format);
 	}
 
 
@@ -110,12 +135,12 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/user.html
 	 * @param integer $page [optional] Current page of results
 	 * @param integer $per_page [optional] Results per page - default 30, max 50
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_users($page = 1, $per_page = 30) {
 		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
 				
-		return $this->_execute_curl("users.xml?page=" . $page . "&per_page=" . $per_page);
+		return $this->_execute_curl("users." . $this->format . "?page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -123,23 +148,23 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/user.html
 	 * @param integer $user_id		required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_user($user_id) {
 		if(empty($user_id))
 			throw new InvalidArgumentException("User ID required");
 		else
-			return $this->_execute_curl("users", $user_id . ".xml");
+			return $this->_execute_curl("users", $user_id . "." . $this->format);
 	}
 
 	/**
 	 * Returns Beanstalk user currently being used to access the API
 	 *
 	 * @link http://api.beanstalkapp.com/user.html
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_current_user() {
-		return $this->_execute_curl("users", "current.xml");
+		return $this->_execute_curl("users", "current." . $this->format);
 	}
 
 	/**
@@ -153,25 +178,46 @@ class BeanstalkAPI {
 	 * @param string $password
 	 * @param int $admin [optional]
 	 * @param string $timezone [optional]
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_user($login, $email, $first_name, $last_name, $password, $admin = 0, $timezone = NULL) {
 		if(empty($login) || empty($email) || empty($first_name) || empty($last_name) || empty($password))
 			throw new InvalidArgumentException("Some required fields missing");
-
-		$xml = new SimpleXMLElement('<user></user>');
-
-		$xml->addChild('login', $login);
-		$xml->addChild('email', $email);
-		$xml->addChild('first-name', $first_name);
-		$xml->addChild('last-name', $last_name);
-		$xml->addChild('password', $password);
-		$xml->addChild('admin', $admin); // Should change to optional?
-
-		if(!is_null($timezone))
-			$xml->addChild('timezone', $timezone);
-
-		return $this->_execute_curl("users.xml", NULL, "POST", $xml->asXml());
+		
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<user></user>');
+			
+			$xml->addChild('login', $login);
+			$xml->addChild('email', $email);
+			$xml->addChild('first-name', $first_name);
+			$xml->addChild('last-name', $last_name);
+			$xml->addChild('password', $password);
+			$xml->addChild('admin', $admin); // Should change to optional?
+			
+			if(!is_null($timezone))
+				$xml->addChild('timezone', $timezone);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('user' => array());
+			
+			$data_array['user']['login'] = $login;
+			$data_array['user']['email'] = $email;
+			$data_array['user']['first-name'] = $first_name;
+			$data_array['user']['last-name'] = $last_name;
+			$data_array['user']['password'] = $password;
+			$data_array['user']['admin'] = $admin;
+			
+			if(isset($timezone))
+				$data_array['user']['timezone'] = $timezone;
+			
+			$data = json_encode($data_array);
+		}
+		
+		return $this->_execute_curl("users." . $this->format, NULL, "POST", $data);
 	}
 
 	/**
@@ -180,36 +226,65 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/user.html
 	 * @param integer $user_id
 	 * @param array $params Accepts - email, first_name, last_name, password, admin, timezone
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function update_user($user_id, $params = array()) {
 		if(empty($user_id))
 			throw new InvalidArgumentException("User ID required");
-
+		
 		if(count($params) == 0)
 			throw new InvalidArgumentException("Nothing to update");
-
-		$xml = new SimpleXMLElement('<user></user>');
-
-		if(isset($params['email']))
-			$xml->addChild('email', $params['email']);
-
-		if(isset($params['first_name']))
-			$xml->addChild('first-name', $params['first_name']);
-
-		if(isset($params['last_name']))
-			$xml->addChild('last-name', $params['last_name']);
-
-		if(isset($params['password']))
-			$xml->addChild('password', $params['password']);
-
-		if(isset($params['admin']))
-			$xml->addChild('admin', $params['admin']);
-
-		if(isset($params['timezone']))
-			$xml->addChild('timezone', $params['timezone']);
-
-		return $this->_execute_curl("users", $user_id . ".xml", "PUT", $xml->asXml());
+		
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<user></user>');
+			
+			if(isset($params['email']))
+				$xml->addChild('email', $params['email']);
+			
+			if(isset($params['first_name']))
+				$xml->addChild('first-name', $params['first_name']);
+			
+			if(isset($params['last_name']))
+				$xml->addChild('last-name', $params['last_name']);
+			
+			if(isset($params['password']))
+				$xml->addChild('password', $params['password']);
+			
+			if(isset($params['admin']))
+				$xml->addChild('admin', $params['admin']);
+			
+			if(isset($params['timezone']))
+				$xml->addChild('timezone', $params['timezone']);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('user' => array());
+			
+			if(isset($params['email']))
+				$data_array['user']['email'] = $params['email'];
+			
+			if(isset($params['first_name']))
+				$data_array['user']['first-name'] = $params['first_name'];
+			
+			if(isset($params['last_name']))
+				$data_array['user']['last-name'] = $params['last_name'];
+			
+			if(isset($params['password']))
+				$data_array['user']['password'] = $params['password'];
+			
+			if(isset($params['admin']))
+				$data_array['user']['admin'] = $params['admin'];
+			
+			if(isset($params['timezone']))
+				$data_array['user']['timezone'] = $params['timezone'];
+			
+			$data = json_encode($data_array);
+		}
+		
+		return $this->_execute_curl("users", $user_id . "." . $this->format, "PUT", $data);
 	}
 
 	/**
@@ -217,13 +292,71 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/user.html
 	 * @param integer $user_id
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function delete_user($user_id) {
 		if(empty($user_id))
 			throw new InvalidArgumentException("User ID required");
 
-		return $this->_execute_curl("users", $user_id . ".xml", "DELETE");
+		return $this->_execute_curl("users", $user_id . "." . $this->format, "DELETE");
+	}
+
+
+	//
+	// Invitations
+	//
+
+	/**
+	 * Return an invitation
+	 * @param integer $invitation_id
+	 * @return SimpleXMLElement|array
+	 */
+	public function find_invitation($invitation_id)
+	{
+		if(empty($invitation_id))
+			throw new InvalidArgumentException("Invitation ID required");
+		
+		return $this->_execute_curl("invitations", $invitation_id . "." . $this->format);
+	}
+
+	/**
+	 * Create an invitation - creates a User and Invitation
+	 * @param string $email
+	 * @param string $first_name
+	 * @param string $last_name
+	 * @return SimpleXMLElement|array
+	 */
+	public function create_invitation($email, $first_name, $last_name)
+	{
+		if(empty($email) || empty($first_name) || empty($last_name))
+			throw new InvalidArgumentException("Some required fields missing");
+		
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<invitation></invitation>');
+			
+			$user = $xml->addChild('user');
+			
+			$user->addChild('email', $email);
+			$user->addChild('first-name', $first_name);
+			$user->addChild('last-name', $last_name);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('invitation' => array());
+			
+			$data_array['invitation']['user'] = array();
+			
+			$data_array['invitation']['user']['email'] = $email;
+			$data_array['invitation']['user']['first-name'] = $first_name;
+			$data_array['invitation']['user']['last-name'] = $last_name;
+			
+			$data = json_encode($data_array);
+		}
+		
+		return $this->_execute_curl("invitations." . $this->format, NULL, "POST", $data);
 	}
 
 
@@ -236,13 +369,13 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/public_key.html
 	 * @param integer $user_id [optional]
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_public_keys($user_id = NULL) {
 		if(!is_null($user_id))
-			return $this->_execute_curl("public_keys.xml?user_id=" . $user_id);
+			return $this->_execute_curl("public_keys." . $this->format . "?user_id=" . $user_id);
 		else
-			return $this->_execute_curl("public_keys.xml");
+			return $this->_execute_curl("public_keys." . $this->format);
 	}
 
 	/**
@@ -250,13 +383,13 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/public_key.html
 	 * @param integer $key_id
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_public_key($key_id) {
 		if(empty($key_id))
 			throw new InvalidArgumentException("Public key ID required");
 		
-		return $this->_execute_curl("public_keys", $key_id . ".xml");
+		return $this->_execute_curl("public_keys", $key_id . "." . $this->format);
 	}
 
 	/**
@@ -266,23 +399,42 @@ class BeanstalkAPI {
 	 * @param string $content
 	 * @param string $name [optional]
 	 * @param integer $user_id [optional] Defaults to current user
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_public_key($content, $name = NULL, $user_id = NULL) {
 		if(empty($content))
 			throw new InvalidArgumentException("Key content required");
 		
-		$xml = new SimpleXMLElement('<public-key></public-key>');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<public-key></public-key>');
+			
+			$xml->addChild('content', $content);
+			
+			if(!is_null($name))
+				$xml->addChild('name', $name);
+			
+			if(!is_null($user_id))
+				$xml->addChild('user-id', $user_id);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('public-key' => array());
+			
+			$data_array['public-key']['content'] = $content;
+			
+			if(!is_null($name))
+				$data_array['public-key']['name'] = $name;
+			
+			if(!is_null($user_id))
+				$data_array['public-key']['user-id'] = $user_id;
+			
+			$data = json_encode($data_array);
+		}
 		
-		$xml->addChild('content', $content);
-		
-		if(!is_null($name))
-			$xml->addChild('name', $name);
-		
-		if(!is_null($user_id))
-			$xml->addChild('user-id', $user_id);
-		
-		return $this->_execute_curl("public_keys.xml", NULL, "POST", $xml->asXml());
+		return $this->_execute_curl("public_keys." . $this->format, NULL, "POST", $data);
 	}
 
 	/**
@@ -291,7 +443,7 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/public_key.html
 	 * @param integer $key_id
 	 * @param array $params Accepts - content, name
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function update_public_key($key_id, $params = array()) {
 		if(empty($key_id))
@@ -300,15 +452,32 @@ class BeanstalkAPI {
 		if(count($params) == 0)
 			throw new InvalidArgumentException("Nothing to update");
 		
-		$xml = new SimpleXMLElement('<public-key></public-key>');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<public-key></public-key>');
+			
+			if(!is_null($params['content']))
+				$xml->addChild('content', $params['content']);
+			
+			if(!is_null($params['name']))
+				$xml->addChild('name', $params['name']);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('public-key' => array());
+			
+			if(!is_null($params['content']))
+				$data_array['public-key']['content'] = $params['content'];
+			
+			if(!is_null($params['name']))
+				$data_array['public-key']['name'] = $params['name'];
+			
+			$data = json_encode($data_array);
+		}
 		
-		if(!is_null($params['content']))
-			$xml->addChild('content', $params['content']);
-
-		if(!is_null($params['name']))
-			$xml->addChild('name', $params['name']);
-		
-		return $this->_execute_curl("public_keys", $key_id . ".xml", "PUT", $xml->asXml());
+		return $this->_execute_curl("public_keys", $key_id . "." . $this->format, "PUT", $data);
 	}
 
 	/**
@@ -316,13 +485,13 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/public_key.html
 	 * @param integer $key_id
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function delete_public_key($key_id) {
 		if(empty($key_id))
 			throw new InvalidArgumentException("Public key ID required");
 		
-		return $this->_execute_curl("public_keys", $key_id . ".xml", "DELETE");
+		return $this->_execute_curl("public_keys", $key_id . "." . $this->format, "DELETE");
 	}
 
 
@@ -336,12 +505,12 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/repository.html
 	 * @param integer $page [optional] Current page of results
 	 * @param integer $per_page [optional] Results per page - default 30, max 50
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_repositories($page = 1, $per_page = 30) {
 		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
 		
-		return $this->_execute_curl("repositories.xml?page=" . $page . "&per_page=" . $per_page);
+		return $this->_execute_curl("repositories." . $this->format . "?page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -349,13 +518,13 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/repository.html
 	 * @param integer $repo_id		required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_repository($repo_id) {
 		if(empty($repo_id))
 			throw new InvalidArgumentException("Repository ID required");
 		else
-			return $this->_execute_curl("repositories", $repo_id . ".xml");
+			return $this->_execute_curl("repositories", $repo_id . "." . $this->format);
 	}
 
 	/**
@@ -367,28 +536,52 @@ class BeanstalkAPI {
 	 * @param string $title
 	 * @param bool $create_structure [optional]
 	 * @param string $color_label [optional] Accepts - red, orange, yellow, green, blue, pink, grey
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_repository($name, $type_id = "subversion", $title, $create_structure = true, $color_label = "grey") {
 		if(empty($name) || empty($title))
 			throw new InvalidArgumentException("Repository name and title required");
-
-		$xml = new SimpleXMLElement('<repository></repository>');
-
-		$xml->addChild('name', $name);
-
-		if(!is_null($type_id))
-			$xml->addChild('type-id', $type_id);
-
-		$xml->addChild('title', $title);
-
-		if(!is_null($create_structure))
-			$xml->addChild('create_structure', $create_structure);
-
-		if(!is_null($color_label))
-			$xml->addChild('color-label', "label-" . $color_label);
-
-		return $this->_execute_curl("repositories.xml", NULL, "POST", $xml->asXml());
+		
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<repository></repository>');
+		
+			$xml->addChild('name', $name);
+		
+			if(!is_null($type_id))
+				$xml->addChild('type-id', $type_id);
+		
+			$xml->addChild('title', $title);
+		
+			if(!is_null($create_structure))
+				$xml->addChild('create-structure', $create_structure);
+		
+			if(!is_null($color_label))
+				$xml->addChild('color-label', "label-" . $color_label);
+		
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('repository' => array());
+			
+			$data_array['repository']['name'] = $name;
+			
+			if(!is_null($type_id))
+				$data_array['repository']['type-id'] = $type_id;
+			
+			$data_array['repository']['title'] = $title;
+			
+			if(!is_null($create_structure))
+				$data_array['repository']['create-structure'] = $create_structure;
+			
+			if(!is_null($color_label))
+				$data_array['repository']['color-label'] = "label-" . $color_label;
+			
+			$data = json_encode($data_array);
+		}
+		
+		return $this->_execute_curl("repositories." . $this->format, NULL, "POST", $data);
 	}
 
 	/**
@@ -397,7 +590,7 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/repository.html
 	 * @param integer $repo_id
 	 * @param array $params Accepts - name, title, color_label (red, orange, yellow, green, blue, pink, grey)
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function update_repository($repo_id, $params = array()) {
 		if(empty($repo_id))
@@ -406,18 +599,86 @@ class BeanstalkAPI {
 		if(count($params) == 0)
 			throw new InvalidArgumentException("Nothing to update");
 
-		$xml = new SimpleXMLElement('<repository></repository>');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<repository></repository>');
+			
+			if(isset($params['name']))
+				$xml->addChild('name', $params['name']);
+			
+			if(isset($params['title']))
+				$xml->addChild('title', $params['title']);
+			
+			if(isset($params['color-label']))
+				$xml->addChild('color-label', "label-" . $params['color-label']);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('repository' => array());
+			
+			if(isset($params['name']))
+				$data_array['repository']['name'] = $params['name'];
+			
+			if(isset($params['title']))
+				$data_array['repository']['title'] = $params['title'];
+			
+			if(isset($params['color-label']))
+				$data_array['repository']['color-label'] = "label-" . $params['color-label'];
+			
+			$data = json_encode($data_array);
+		}
 
-		if(isset($params['name']))
-			$xml->addChild('name', $params['name']);
+		return $this->_execute_curl("repositories", $repo_id . "." . $this->format, "PUT", $data);
+	}
 
-		if(isset($params['title']))
-			$xml->addChild('title', $params['title']);
 
-		if(isset($params['color-label']))
-			$xml->addChild('color-label', "label-" . $params['color-label']);
+	//
+	// Repository Import
+	//
 
-		return $this->_execute_curl("repositories", $repo_id . ".xml", "PUT", $xml->asXml());
+	/**
+	 * Find an import - also returns the status of the import
+	 * @return SimpleXMLElement|array
+	 */
+	public function find_import($import_id)
+	{
+		if(empty($import_id))
+			throw new Exception("Import ID required");
+		
+		return $this->_execute_curl("repository_imports", $import_id . "." . $this->format);
+	}
+
+	/**
+	 * Import an SVN dump into a repository
+	 * @param integer $repos_id
+	 * @param string $import_url
+	 * @return SimpleXMLElement|array
+	 */
+	public function create_import($repo_id, $import_url)
+	{
+		if(empty($repo_id) || empty($import_url))
+			throw new InvalidArgumentException("Repository ID and import URL required");
+		
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<repository-import></repository-import>');
+			
+			$xml->addChild('uri', $import_url);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('repository-import' => array());
+			
+			$data_array['repository-import']['uri'] = $import_url;
+			
+			$data = json_encode($data_array);
+		}
+		
+		return $this->_execute_curl($repo_id, "repository_imports." . $this->format, "POST", $data);
 	}
 
 
@@ -430,13 +691,13 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/permissions.html
 	 * @param integer $user_id
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_user_permissions($user_id) {
 		if(empty($user_id))
 			throw new InvalidArgumentException("User ID required");
 		
-		return $this->_execute_curl("permissions", $user_id . ".xml");
+		return $this->_execute_curl("permissions", $user_id . "." . $this->format);
 	}
 
 	/**
@@ -449,47 +710,79 @@ class BeanstalkAPI {
 	 * @param bool $write [optional]
 	 * @param bool $full_deployments_access [optional] Gives full deployment access to a repository
 	 * @param integer $server_environment_id [optional] Give deployment access only to a specific server environment
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_user_permissions($user_id, $repo_id, $read = false, $write = false, $full_deployments_access = false, $server_environment_id = NULL) {
 		if(empty($user_id) || empty($repo_id))
 			throw new InvalidArgumentException("Some required fields missing");
 		
-		$xml = new SimpleXMLElement('<permission></permission>');
-		
-		$user_xml = $xml->addChild('user-id', $user_id);
-		$user_xml->addAttribute('type', 'integer');
-		
-		$repo_xml = $xml->addChild('repository-id', $repo_id);
-		$repo_xml->addAttribute('type', 'integer');
-		
-		if($read === true)
-			$read_xml = $xml->addChild('read', 'true');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<permission></permission>');
+			
+			$user_xml = $xml->addChild('user-id', $user_id);
+			$user_xml->addAttribute('type', 'integer');
+			
+			$repo_xml = $xml->addChild('repository-id', $repo_id);
+			$repo_xml->addAttribute('type', 'integer');
+			
+			if($read === true)
+				$read_xml = $xml->addChild('read', 'true');
+			else
+				$read_xml = $xml->addChild('read', 'false');
+			
+			$read_xml->addAttribute('type', 'boolean');
+			
+			if($write === true)
+				$write_xml = $xml->addChild('write', 'true');
+			else
+				$write_xml = $xml->addChild('write', 'false');
+			
+			$write_xml->addAttribute('type', 'boolean');
+			
+			if($full_deployments_access === true)
+				$full_deploy_xml = $xml->addChild('full-deployments-access', 'true');
+			else
+				$full_deploy_xml = $xml->addChild('full-deployments-access', 'false');
+			
+			$full_deploy_xml->addAttribute('type', 'boolean');
+			
+			if(!is_null($server_environment_id)) {
+				$environment_xml = $xml->addChild('server-environment-id', $server_environment_id);
+				$environment_xml->addAttribute('type', 'integer');
+			}
+			
+			$data = $xml->asXml();
+		}
 		else
-			$read_xml = $xml->addChild('read', 'false');
-		
-		$read_xml->addAttribute('type', 'boolean');
-		
-		if($write === true)
-			$write_xml = $xml->addChild('write', 'true');
-		else
-			$write_xml = $xml->addChild('write', 'false');
-		
-		$write_xml->addAttribute('type', 'boolean');
-		
-		if($full_deployments_access === true)
-			$full_deploy_xml = $xml->addChild('full-deployments-access', 'true');
-		else
-			$full_deploy_xml = $xml->addChild('full-deployments-access', 'false');
-		
-		$full_deploy_xml->addAttribute('type', 'boolean');
-		
-		if(!is_null($server_environment_id)) {
-			$environment_xml = $xml->addChild('server-environment-id', $server_environment_id);
-			$environment_xml->addAttribute('type', 'integer');
+		{
+			$data_array = array('permission' => array());
+			
+			$data_array['permission']['user-id'] = $user_id;
+			$data_array['permission']['repository-id'] = $repo_id;
+			
+			if($read === true)
+				$data_array['permission']['read'] = true;
+			else
+				$data_array['permission']['read'] = false;
+			
+			if($write === true)
+				$data_array['permission']['write'] = true;
+			else
+				$data_array['permission']['write'] = false;
+			
+			if($full_deployments_access === true)
+				$data_array['permission']['full-deployments-access'] = true;
+			else
+				$data_array['permission']['full-deployments-access'] = false;
+			
+			if(!is_null($server_environment_id))
+				$data_array['permission']['server-environment-id'] = $server_environment_id;
+			
+			$data = json_encode($data_array);
 		}
 		
-		return $this->_execute_curl("permissions.xml", NULL, "POST", $xml->asXml());
+		return $this->_execute_curl("permissions." . $this->format, NULL, "POST", $data);
 	}
 
 	/**
@@ -497,13 +790,13 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/permissions.html
 	 * @param integer $permission_id
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function delete_user_permissions($permission_id) {
 		if(empty($permission_id))
 			throw new InvalidArgumentException("Permission ID required");
 		
-		return $this->_execute_curl("permissions", $permission_id . ".xml", "DELETE");
+		return $this->_execute_curl("permissions", $permission_id . "." . $this->format, "DELETE");
 	}
 
 
@@ -519,13 +812,13 @@ class BeanstalkAPI {
 	 * @param integer $per_page [optional] Results per page - default 15, max 30
 	 * @param string $order_field [optioanl] Order results by a field - default 'time'
 	 * @param string $order [optional] Order direction - can be ASC or DESC - default 'DESC'
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_changesets($page = 1, $per_page = 15, $order_field = 'time', $order = 'DESC') {
 		$per_page = intval($per_page) > 30 ? 30 : intval($per_page);
 		$order = strtoupper($order) == 'ASC' ? 'ASC' : 'DESC';
 		
-		return $this->_execute_curl("changesets.xml?page=" . $page . "&per_page=" . $per_page . "&order_field" . $order_field . "&order=" . $order);
+		return $this->_execute_curl("changesets." . $this->format . "?page=" . $page . "&per_page=" . $per_page . "&order_field" . $order_field . "&order=" . $order);
 	}
 
 	/**
@@ -537,7 +830,7 @@ class BeanstalkAPI {
 	 * @param integer $per_page [optional] Set results per page - default 15
 	 * @param string $order_field [optioanl] Order results by a field - default 'time'
 	 * @param string $order [optional] Order direction - can be ASC or DESC - default 'DESC'
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_repository_changesets($repo_id, $page = 1, $per_page = 15, $order_field = 'time', $order = 'DESC') {
 		if(empty($repo_id))
@@ -546,7 +839,7 @@ class BeanstalkAPI {
 		$per_page = intval($per_page) > 30 ? 30 : intval($per_page);
 		$order = strtoupper($order) == 'ASC' ? 'ASC' : 'DESC';
 		
-		return $this->_execute_curl("changesets", "repository.xml?repository_id=" . $repo_id . "&page=" . $page . "&per_page=" . $per_page . "&order_field" . $order_field . "&order=" . $order);
+		return $this->_execute_curl("changesets", "repository." . $this->format . "?repository_id=" . $repo_id . "&page=" . $page . "&per_page=" . $per_page . "&order_field" . $order_field . "&order=" . $order);
 	}
 
 	/**
@@ -555,13 +848,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/changeset.html
 	 * @param integer $repo_id		required
 	 * @param integer $revision		required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_changeset($repo_id, $revision) {
 		if(empty($repo_id) || empty($revision))
 			throw new InvalidArgumentException("Changeset ID and repository ID required");
 		else
-			return $this->_execute_curl("changesets", $revision . ".xml?repository_id=" . $repo_id);
+			return $this->_execute_curl("changesets", $revision . "." . $this->format . "?repository_id=" . $repo_id);
 	}
 
 
@@ -576,7 +869,7 @@ class BeanstalkAPI {
 	 * @param integer $repo_id		required
 	 * @param integer $page [optional] Current page of results
 	 * @param integer $per_page [optional] Results per page - default 15, max 50
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_comments($repo_id, $page = 1, $per_page = 15) {
 		if(empty($repo_id))
@@ -584,7 +877,7 @@ class BeanstalkAPI {
 		
 		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
 		
-		return $this->_execute_curl($repo_id, "comments.xml?page=" . $page . "&per_page=" . $per_page);
+		return $this->_execute_curl($repo_id, "comments." . $this->format . "?page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -595,7 +888,7 @@ class BeanstalkAPI {
 	 * @param integer $revision		required
 	 * @param integer $page [optional] Current page of results
 	 * @param integer $per_page [optional] Results per page - default 15, max 50
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_changeset_comments($repo_id, $revision, $page = 1, $per_page = 15) {
 		if(empty($repo_id) || empty($revision))
@@ -603,7 +896,7 @@ class BeanstalkAPI {
 		
 		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
 		
-		return $this->_execute_curl($repo_id, "comments.xml?revision=" . $revision . "&page=" . $page . "&per_page=" . $per_page);
+		return $this->_execute_curl($repo_id, "comments." . $this->format . "?revision=" . $revision . "&page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -613,7 +906,7 @@ class BeanstalkAPI {
 	 * @param integer $user_id
 	 * @param integer $page [optional] Current page of results
 	 * @param integer $per_page [optional] Results per page - default 15, max 50
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_user_comments($user_id, $page = 1, $per_page = 15) {
 		if(empty($user_id))
@@ -621,7 +914,7 @@ class BeanstalkAPI {
 		
 		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
 		
-		return $this->_execute_curl("comments", "user.xml?user_id=" . $user_id . "&page=" . $page . "&per_page=" . $per_page);
+		return $this->_execute_curl("comments", "user." . $this->format . "?user_id=" . $user_id . "&page=" . $page . "&per_page=" . $per_page);
 	}
 
 	/**
@@ -630,13 +923,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/comment.html
 	 * @param integer $repo_id		required
 	 * @param integer $revision		required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_comment($repo_id, $comment_id) {
 		if(empty($repo_id) || empty($comment_id))
 			throw new InvalidArgumentException("Repository ID and comment ID required");
 		else
-			return $this->_execute_curl($repo_id, "comments/" . $comment_id . ".xml");
+			return $this->_execute_curl($repo_id, "comments/" . $comment_id . "." . $this->format);
 	}
 
 	/**
@@ -648,22 +941,38 @@ class BeanstalkAPI {
 	 * @param string $body
 	 * @param string $file_path
 	 * @param integer $line_number
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_comment($repo_id, $revision_id, $body, $file_path, $line_number) {
 		if(empty($repo_id) || empty($revision_id) || empty($body) || empty($file_path) || empty($line_number))
 			throw new InvalidArgumentException("Some required fields missing");
-
-		$xml = new SimpleXMLElement('<comment></comment>');
-
-		$revision_xml = $xml->addChild('revision', $revision_id);
-		$revision_xml->addAttribute('type', 'integer');
-
-		$xml->addChild('body', $body);
-		$xml->addChild('file-path', $file_path);
-		$xml->addChild('line-number', $line_number); // Should this have type attribute set as well?
-
-		return $this->_execute_curl($repo_id, "comments.xml", "POST", $xml->asXml());
+		
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<comment></comment>');
+			
+			$revision_xml = $xml->addChild('revision', $revision_id);
+			$revision_xml->addAttribute('type', 'integer');
+			
+			$xml->addChild('body', $body);
+			$xml->addChild('file-path', $file_path);
+			$xml->addChild('line-number', $line_number); // Should this have type attribute set as well?
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('comment' => array());
+			
+			$data_array['comment']['revision'] = $revision_id;
+			$data_array['comment']['body'] = $body;
+			$data_array['comment']['file-path'] = $file_path;
+			$data_array['comment']['line-number'] = $line_number;
+			
+			$data = json_encode($data_array);
+		}
+		
+		return $this->_execute_curl($repo_id, "comments." . $this->format, "POST", $data);
 	}
 
 
@@ -676,13 +985,13 @@ class BeanstalkAPI {
 	 *
 	 * @link http://api.beanstalkapp.com/server_environment.html
 	 * @param integer $repo_id		required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_server_environments($repo_id) {
 		if(empty($repo_id))
 			throw new InvalidArgumentException("Repository ID required");
 		else
-			return $this->_execute_curl($repo_id, "server_environments.xml");
+			return $this->_execute_curl($repo_id, "server_environments." . $this->format);
 	}
 
 	/**
@@ -691,13 +1000,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/server_environment.html
 	 * @param integer $repo_id		required
 	 * @param integer $environment_id	required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_server_environment($repo_id, $environment_id) {
 		if(empty($repo_id) || empty($environment_id))
 			throw new InvalidArgumentException("Repository ID required");
 		else
-			return $this->_execute_curl($repo_id, "server_environments/" . $environment_id . ".xml");
+			return $this->_execute_curl($repo_id, "server_environments/" . $environment_id . "." . $this->format);
 	}
 
 	/**
@@ -708,21 +1017,45 @@ class BeanstalkAPI {
 	 * @param string $name
 	 * @param bool $automatic [optional]
 	 * @param string $branch_name [optional] Git only
-	 * @return SimpleXMLElement
+	 * @param string $color_label [optional] Accepts - red, orange, yellow, green, blue, pink, grey
+	 * @return SimpleXMLElement|array
 	 */
-	public function create_server_environment($repo_id, $name, $automatic = false, $branch_name = NULL) {
+	public function create_server_environment($repo_id, $name, $automatic = false, $branch_name = NULL, $color_label = NULL) {
 		if(empty($repo_id) || empty($name) || ($automatic !== false && $automatic !== true))
 			throw new InvalidArgumentException("Repository ID, name and deploy automatically required");
 		
-		$xml = new SimpleXMLElement('<server-environment></server-environment>');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<server-environment></server-environment>');
+			
+			$xml->addChild('name', $name);
+			$xml->addChild('automatic', $automatic);
+			
+			if(!is_null($branch_name))
+				$xml->addChild('branch-name', $branch_name);
+			
+			if(!is_null($color_label))
+				$xml->addChild('color-label', 'color-' . $color_label);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('server-environment' => array());
+			
+			$data_array['server-environment']['name'] = $name;
+			$data_array['server-environment']['automatic'] = $automatic;
+			
+			if(!is_null($branch_name))
+				$data_array['server-environment']['branch-name'] = $branch_name;
+			
+			if(!is_null($color_label))
+				$data_array['server-environment']['color-label'] = 'color-' . $color_label;
+			
+			$data = json_encode($data_array);
+		}
 		
-		$xml->addChild('name', $name);
-		$xml->addChild('automatic', $automatic);
-		
-		if(!is_null($branch_name))
-			$xml->addChild('branch-name', $branch_name);
-		
-		return $this->_execute_curl($repo_id, "server_environments.xml", "POST", $xml->asXml());
+		return $this->_execute_curl($repo_id, "server_environments." . $this->format, "POST", $data);
 	}
 
 	/**
@@ -732,7 +1065,7 @@ class BeanstalkAPI {
 	 * @param integer $repo_id
 	 * @param integer $environment_id
 	 * @param array $params Accepts - name, automatic, branch_name
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function update_server_environment($repo_id, $environment_id, $params = array()) {
 		if(empty($repo_id) || empty($environment_id))
@@ -741,18 +1074,38 @@ class BeanstalkAPI {
 		if(count($params) == 0)
 			throw new InvalidArgumentException("Nothing to update");
 		
-		$xml = new SimpleXMLElement('<server-environment></server-environment>');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<server-environment></server-environment>');
+			
+			if(isset($params['name']))
+				$xml->addChild('name', $params['name']);
+			
+			if(isset($params['automatic']))
+				$xml->addChild('automatic', $params['automatic']);
+			
+			if(isset($params['branch_name']))
+				$xml->addChild('branch-name', $params['branch_name']);
+			
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('server-environment' => array());
+			
+			if(isset($params['name']))
+				$data_array['server-environment']['name'] = $params['name'];
+			
+			if(isset($params['automatic']))
+				$data_array['server-environment']['automatic'] = $params['automatic'];
+			
+			if(isset($params['branch_name']))
+				$data_array['server-environment']['branch-name'] = $params['branch_name'];
+			
+			$data = json_encode($data_array);
+		}
 		
-		if(isset($params['name']))
-			$xml->addChild('name', $params['name']);
-		
-		if(isset($params['automatic']))
-			$xml->addChild('automatic', $params['automatic']);
-		
-		if(isset($params['branch_name']))
-			$xml->addChild('branch-name', $params['branch_name']);
-		
-		return $this->_execute_curl($repo_id, "server_environments/" . $environment_id . ".xml", "PUT", $xml->asXml());
+		return $this->_execute_curl($repo_id, "server_environments/" . $environment_id . "." . $this->format, "PUT", $data);
 	}
 
 
@@ -766,13 +1119,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/release_server.html
 	 * @param integer $repo_id		required
 	 * @param integer $environment_id	required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	function find_all_release_servers($repo_id, $environment_id) {
 		if(empty($repo_id) || empty($environment_id))
 			throw new InvalidArgumentException("Repository ID and environment ID required");
 		else
-			return $this->_execute_curl($repo_id, "release_servers.xml?environment_id=" . $environment_id);
+			return $this->_execute_curl($repo_id, "release_servers." . $this->format . "?environment_id=" . $environment_id);
 	}
 
 	/**
@@ -781,13 +1134,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/release_server.html
 	 * @param integer $repo_id		required
 	 * @param integer $server_id		required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_release_server($repo_id, $server_id) {
 		if(empty($repo_id) || empty($server_id))
 			throw new InvalidArgumentException("Repository ID and server ID required");
 		else
-			return $this->_execute_curl($repo_id, "release_servers/" . $server_id . ".xml");
+			return $this->_execute_curl($repo_id, "release_servers/" . $server_id . "." . $this->format);
 	}
 
 	/**
@@ -809,51 +1162,98 @@ class BeanstalkAPI {
 	 * @param bool $use_feat [optional] Defaults to true
 	 * @param string $pre_release_hook [optional]
 	 * @param string $post_release_hook [optional]
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_release_server($repo_id, $environment_id, $name, $local_path, $remote_path, $remote_addr, $protocol = 'ftp', $port = 21, $login, $password, $use_active_mode = NULL, $authenticate_by_key = NULL, $use_feat = true, $pre_release_hook = NULL, $post_release_hook = NULL) {
 		if(empty($repo_id) || empty($environment_id) || empty($name) || empty($local_path) || empty($remote_path) || empty($remote_addr) || empty($protocol) || empty($port) || empty($login))
 			throw new InvalidArgumentException("Some required fields missing");
 		
-		$xml = new SimpleXMLElement('<release-server></release-server>');
-		
-		$xml->addChild('name', $name);
-		$xml->addChild('local-path', $local_path);
-		$xml->addChild('remote-path', $remote_path);
-		$xml->addChild('remote-addr', $remote_addr);
-		
-		$xml->addChild('login', $login);
-		
-		if($protocol == 'sftp') {
-			$xml->addChild('protocol', 'sftp');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<release-server></release-server>');
 			
-			if($authenticate_by_key == true) {
-				$xml->addChild('authenticate_by_key', true);
+			$xml->addChild('name', $name);
+			$xml->addChild('local-path', $local_path);
+			$xml->addChild('remote-path', $remote_path);
+			$xml->addChild('remote-addr', $remote_addr);
+			
+			$xml->addChild('login', $login);
+			
+			if($protocol == 'sftp') {
+				$xml->addChild('protocol', 'sftp');
+				
+				if($authenticate_by_key == true) {
+					$xml->addChild('authenticate_by_key', true);
+				}
+				else {
+					$xml->addChild('password', $password);
+				}
 			}
 			else {
+				$xml->addChild('protocol', 'ftp');
 				$xml->addChild('password', $password);
 			}
+			
+			$xml->addChild('port', $port);
+			
+			if(!is_null($use_active_mode))
+				$xml->addChild('use-active-mode', $use_active_mode);
+			
+			if(!is_null($use_feat))
+				$xml->addChild('use-feat', $use_feat); // True by default
+			
+			if(!is_null($pre_release_hook))
+				$xml->addChild('pre-release-hook', $pre_release_hook);
+			
+			if(!is_null($post_release_hook))
+				$xml->addChild('post-release-hook', $post_release_hook);
+			
+			$data = $xml->asXml();
 		}
-		else {
-			$xml->addChild('protocol', 'ftp');
-			$xml->addChild('password', $password);
+		else
+		{
+			$data_array = array('release-server' => array());
+			
+			$data_array['release-server']['name'] = $name;
+			$data_array['release-server']['local-path'] = $local_path;
+			$data_array['release-server']['remote-path'] = $remote_path;
+			$data_array['release-server']['remote-addr'] = $remote_addr;
+			
+			$data_array['release-server']['login'] = $login;
+			
+			if($protocol == 'sftp') {
+				$data_array['release-server']['protocol'] = 'sftp';
+				
+				if($authenticate_by_key == true) {
+					$data_array['release-server']['authenticate-by-key'] = true;
+				}
+				else {
+					$data_array['release-server']['password'] = $password;
+				}
+			}
+			else {
+				$data_array['release-server']['protocol'] = 'ftp';
+				$data_array['release-server']['password'] = $password;
+			}
+			
+			$data_array['release-server']['port'] = $port;
+			
+			if(!is_null($use_active_mode))
+				$data_array['release-server']['use-active-mode'] = $use_active_mode;
+			
+			if(!is_null($use_feat))
+				$data_array['release-server']['use-feat'] = $use_feat; // True by default
+			
+			if(!is_null($pre_release_hook))
+				$data_array['release-server']['pre-release-hook'] = $pre_release_hook;
+			
+			if(!is_null($post_release_hook))
+				$data_array['release-server']['post-release-hook'] = $post_release_hook;
+			
+			$data = json_encode($data_array);
 		}
 		
-		$xml->addChild('port', $port);
-		
-		if(!is_null($use_active_mode))
-			$xml->addChild('use-active-mode', $use_active_mode);
-		
-		if(!is_null($use_feat))
-			$xml->addChild('use-feat', $use_feat); // True by default
-		
-		if(!is_null($pre_release_hook))
-			$xml->addChild('pre-release-hook', $pre_release_hook);
-		
-		if(!is_null($post_release_hook))
-			$xml->addChild('post-release-hook', $post_release_hook);
-		
-		return $this->_execute_curl($repo_id, "release_servers.xml?environment_id=" . $environment_id, "POST", $xml->asXml());
+		return $this->_execute_curl($repo_id, "release_servers." . $this->format . "?environment_id=" . $environment_id, "POST", $data);
 	}
 
 	/**
@@ -863,7 +1263,7 @@ class BeanstalkAPI {
 	 * @param integer $repo_id
 	 * @param integer $server_id
 	 * @param array $params Accepts - name, local_path, remote_path, remote_addr, protocol, port, login, password, use_active_mode, authenticate_by_key, use_feat, pre_release_hook, post_release_hook
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function update_release_server($repo_id, $server_id, $params = array()) {
 		if(empty($repo_id) || empty($server_id))
@@ -872,48 +1272,98 @@ class BeanstalkAPI {
 		if(count($params) == 0)
 			throw new InvalidArgumentException("Nothing to update");
 		
-		$xml = new SimpleXMLElement('<release-server></release-server>');
-		
-		if(!is_null($params['name']))
-			$xml->addChild('name', $params['name']);
-		
-		if(!is_null($params['local_path']))
-			$xml->addChild('local-path', $params['local_path']);
-		
-		if(!is_null($params['remote_path']))
-			$xml->addChild('remote-path', $params['remote_path']);
-		
-		if(!is_null($params['remote_addr']))
-			$xml->addChild('remote-addr', $params['remote_addr']);
-		
-		if(!is_null($params['protocol']))
-			$xml->addChild('protocol', $params['protocol']);
-		
-		if(!is_null($params['port']))
-			$xml->addChild('port', $params['port']);
-		
-		if(!is_null($params['login']))
-			$xml->addChild('login', $params['login']);
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<release-server></release-server>');
+	
+			if(!is_null($params['name']))
+				$xml->addChild('name', $params['name']);
+	
+			if(!is_null($params['local_path']))
+				$xml->addChild('local-path', $params['local_path']);
+	
+			if(!is_null($params['remote_path']))
+				$xml->addChild('remote-path', $params['remote_path']);
+	
+			if(!is_null($params['remote_addr']))
+				$xml->addChild('remote-addr', $params['remote_addr']);
+	
+			if(!is_null($params['protocol']))
+				$xml->addChild('protocol', $params['protocol']);
+	
+			if(!is_null($params['port']))
+				$xml->addChild('port', $params['port']);
+	
+			if(!is_null($params['login']))
+				$xml->addChild('login', $params['login']);
 
-		if(!is_null($params['password']))
-			$xml->addChild('password', $params['password']);
+			if(!is_null($params['password']))
+				$xml->addChild('password', $params['password']);
 
-		if(!is_null($params['use_active_mode']))
-			$xml->addChild('use-active-mode', $params['use_active_mode']);
+			if(!is_null($params['use_active_mode']))
+				$xml->addChild('use-active-mode', $params['use_active_mode']);
 
-		if(!is_null($params['authenticate_by_key']))
-			$xml->addChild('authenticate-by-key', $params['authenticate_by_key']);
+			if(!is_null($params['authenticate_by_key']))
+				$xml->addChild('authenticate-by-key', $params['authenticate_by_key']);
 
-		if(!is_null($params['use_feat']))
-			$xml->addChild('use-feat', $params['use_feat']);
+			if(!is_null($params['use_feat']))
+				$xml->addChild('use-feat', $params['use_feat']);
 
-		if(!is_null($params['pre_release_hook']))
-			$xml->addChild('pre-release-hook', $params['pre_release_hook']);
+			if(!is_null($params['pre_release_hook']))
+				$xml->addChild('pre-release-hook', $params['pre_release_hook']);
 
-		if(!is_null($params['post_release_hook']))
-			$xml->addChild('post-release-hook', $params['post_release_hook']);
+			if(!is_null($params['post_release_hook']))
+				$xml->addChild('post-release-hook', $params['post_release_hook']);
+
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('release-server' => array());
+			
+			if(!is_null($params['name']))
+				$data_array['release-server']['name'] = $params['name'];
+			
+			if(!is_null($params['local_path']))
+				$data_array['release-server']['local-path'] = $params['local_path'];
+			
+			if(!is_null($params['remote_path']))
+				$data_array['release-server']['remote-path'] = $params['remote_path'];
+			
+			if(!is_null($params['remote_addr']))
+				$data_array['release-server']['remote-addr'] = $params['remote_addr'];
+			
+			if(!is_null($params['protocol']))
+				$data_array['release-server']['protocol'] = $params['protocol'];
+			
+			if(!is_null($params['port']))
+				$data_array['release-server']['port'] = $params['port'];
+			
+			if(!is_null($params['login']))
+				$data_array['release-server']['login'] = $params['login'];
+			
+			if(!is_null($params['password']))
+				$data_array['release-server']['password'] = $params['password'];
+			
+			if(!is_null($params['use_active_mode']))
+				$data_array['release-server']['use-active-mode'] = $params['use_active_mode'];
+			
+			if(!is_null($params['authenticate_by_key']))
+				$data_array['release-server']['authenticate-by-key'] = $params['authenticate_by_key'];
+			
+			if(!is_null($params['use_feat']))
+				$data_array['release-server']['use-feat'] = $params['use_feat'];
+			
+			if(!is_null($params['pre_release_hook']))
+				$data_array['release-server']['pre-release-hook'] = $params['pre_release_hook'];
+			
+			if(!is_null($params['post_release_hook']))
+				$data_array['release-server']['post-release-hook'] = $params['post_release_hook'];
+	
+			$data = json_encode($data_array);
+		}
 		
-		return $this->_execute($repo_id, "release_servers/" . $server_id . ".xml", "PUT", $xml->asXml());
+		return $this->_execute($repo_id, "release_servers/" . $server_id . "." . $this->format, "PUT", $data);
 	}
 
 	/**
@@ -922,13 +1372,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/release_server.html
 	 * @param integer $repo_id
 	 * @param integer $server_id
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function delete_release_server($repo_id, $server_id) {
 		if(empty($repo_id) || empty($server_id))
 			throw new InvalidArgumentException("Repository ID and release server ID required");
 		
-		return $this->_execute_curl($repo_id, "release_servers/" . $server_id . ".xml", "DELETE");
+		return $this->_execute_curl($repo_id, "release_servers/" . $server_id . "." . $this->format, "DELETE");
 	}
 
 
@@ -943,18 +1393,43 @@ class BeanstalkAPI {
 	 * @param integer $repo_id [optional] Releases from specified repository
 	 * @param integer $page [optional] Current page of results
 	 * @param integer $per_page [optional] Results per page - default 10, max 50
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_all_releases($repo_id = NULL, $page = 1, $per_page = 10) {
 		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
 		
 		if(empty($repo_id))
 		{
-			return $this->_execute_curl("releases.xml?page=" . $page . "&per_page=" . $per_page, NULL);
+			return $this->_execute_curl("releases." . $this->format . "?page=" . $page . "&per_page=" . $per_page, NULL);
 		}
 		else
 		{
-			return $this->_execute_curl($repo_id, "releases.xml?page=" . $page . "&per_page=" . $per_page);
+			return $this->_execute_curl($repo_id, "releases." . $this->format . "?page=" . $page . "&per_page=" . $per_page);
+		}
+	}
+
+	/**
+	 * Returns a listing of releases for a specific repos, and optionally environment
+	 * @param integer $repo_id
+	 * @param integer $environment_id [optional] Optional server environment filtering
+	 * @param integer $page [optional] Current page of results
+	 * @param integer $per_page [optional] Results per page - default 10, max 50
+	 * @return SimpleXmlElement|array
+	 */
+	public function find_all_repository_releases($repo_id, $environment_id = NULL, $page = 1, $per_page = 10) {
+		if(empty($repo_id))
+			throw new InvalidArgumentException("Repository ID required");
+		
+		$per_page = intval($per_page) > 50 ? 50 : intval($per_page);
+		
+		// Should this be changed to array of query string params and use http_build_query() ?
+		if(is_null($environment_id))
+		{
+			return $this->_execute_curl($repo_id, "releases." . $this->format . "?page=" . $page . "&per_page=" . $per_page);
+		}
+		else
+		{
+			return $this->_execute_curl($repo_id, "releases." . $this->format . "?environment_id=" . $environment_id . "&page=" . $page . "&per_page=" . $per_page);
 		}
 	}
 
@@ -964,13 +1439,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/release.html
 	 * @param integer $repo_id		required
 	 * @param integer $release_id	required
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function find_single_release($repo_id, $release_id) {
 		if(empty($repo_id) || empty($release_id))
 			throw new InvalidArgumentException("Repository ID and release ID required");
 		
-		return $this->_execute_curl($repo_id, "releases/" . $release_id . ".xml");
+		return $this->_execute_curl($repo_id, "releases/" . $release_id . "." . $this->format);
 	}
 
 	/**
@@ -982,21 +1457,36 @@ class BeanstalkAPI {
 	 * @param integer $revision_id
 	 * @param string $comment [optional]
 	 * @param bool $deploy_from_scratch [optional]
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function create_release($repo_id, $environment_id, $revision_id, $comment = '', $deploy_from_scratch = false) {
 		if(empty($repo_id) || empty($environment_id) || empty($revision_id))
 			throw new InvalidArgumentException("Repository ID, server environment ID and revision required");
 		
-		$xml = new SimpleXMLElement('<release></release>');
+		if($this->format == 'xml')
+		{
+			$xml = new SimpleXMLElement('<release></release>');
+	
+			$revision_xml = $xml->addChild('revision', $revision_id);
+			$revision_xml->addAttribute('type', 'integer');
+	
+			$xml->addChild('comment', $comment);
+			$xml->addChild('deploy-from-scratch', $deploy_from_scratch);
+
+			$data = $xml->asXml();
+		}
+		else
+		{
+			$data_array = array('release' => array());
+			
+			$data_array['release']['revision'] = $revision_id;
+			$data_array['release']['comment'] = $comment;
+			$data_array['release']['deploy-from-scratch'] = $deploy_from_scratch;
+	
+			$data = json_encode($data_array);
+		}
 		
-		$revision_xml = $xml->addChild('revision', $revision_id);
-		$revision_xml->addAttribute('type', 'integer');
-		
-		$xml->addChild('comment', $comment);
-		$xml->addChild('deploy-from-scratch', $deploy_from_scratch);
-		
-		return $this->_execute_curl($repo_id, "releases.xml?environment_id=" . $environment_id, "POST", $xml->asXml());
+		return $this->_execute_curl($repo_id, "releases." . $this->format . "?environment_id=" . $environment_id, "POST", $data);
 	}
 
 	/**
@@ -1005,13 +1495,13 @@ class BeanstalkAPI {
 	 * @link http://api.beanstalkapp.com/release.html
 	 * @param integer $repo_id
 	 * @param integer $release_id
-	 * @return SimpleXMLElement
+	 * @return SimpleXMLElement|array
 	 */
 	public function retry_release($repo_id, $release_id) {
 		if(empty($repo_id) || empty($release_id))
 			throw new InvalidArgumentException("Repository ID and release ID required");
 		
-		return $this->_execute_curl($repo_id, "releases/" . $release_id . "/retry.xml", "PUT");
+		return $this->_execute_curl($repo_id, "releases/" . $release_id . "/retry." . $this->format, "PUT");
 	}
 
 
@@ -1034,7 +1524,7 @@ class BeanstalkAPI {
 		else
 			$ch = curl_init("https://" . $this->account_name . ".beanstalkapp.com/api/" . $api_name . "/" . $api_params);
 
-		$headers = array('Content-type: application/xml');
+		$headers = array('Content-type: application/' . $this->format);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_USERPWD, $this->username . ':' . $this->password);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION,1);
@@ -1049,11 +1539,11 @@ class BeanstalkAPI {
 
 		$data = curl_exec($ch);
 
-		$curl_info = curl_getinfo($ch);
+		$this->curl_info = curl_getinfo($ch);
 		
 		// Check return code is in 2xx range
-		if(floor($curl_info['http_code'] / 100) != 2) {
-			$this->error_code = $curl_info['http_code'];
+		if(floor($this->curl_info['http_code'] / 100) != 2) {
+			$this->error_code = $this->curl_info['http_code'];
 			$this->error_string = "Curl request failed";
 			throw new APIException($this->error_code . ": ".$this->error_string, $this->error_code);
 		}
@@ -1068,8 +1558,16 @@ class BeanstalkAPI {
 		
 		curl_close($ch);
 		
-		// Process XML into SimpleXMLElement
-		return simplexml_load_string($data);
+		if($this->format == 'xml')
+		{
+			// Process XML into SimpleXMLElement
+			return simplexml_load_string($data);	
+		}
+		else
+		{
+			// Process JSON
+			return json_decode($data);
+		}
 	}
 }
 
