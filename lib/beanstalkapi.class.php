@@ -306,6 +306,8 @@ class BeanstalkAPI {
 
 	/**
 	 * Return an invitation
+	 * 
+	 * @link http://api.beanstalkapp.com/invitation.html
 	 * @param integer $invitation_id
 	 * @return SimpleXMLElement|array
 	 */
@@ -319,6 +321,8 @@ class BeanstalkAPI {
 
 	/**
 	 * Create an invitation - creates a User and Invitation
+	 * 
+	 * @link http://api.beanstalkapp.com/invitation.html
 	 * @param string $email
 	 * @param string $first_name
 	 * @param string $last_name
@@ -638,6 +642,8 @@ class BeanstalkAPI {
 
 	/**
 	 * Find an import - also returns the status of the import
+	 * 
+	 * @link http://api.beanstalkapp.com/repository_import.html
 	 * @return SimpleXMLElement|array
 	 */
 	public function find_import($import_id)
@@ -650,6 +656,8 @@ class BeanstalkAPI {
 
 	/**
 	 * Import an SVN dump into a repository
+	 * 
+	 * @link http://api.beanstalkapp.com/repository_import.html
 	 * @param integer $repo_id
 	 * @param string $import_url
 	 * @return SimpleXMLElement|array
