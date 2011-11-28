@@ -863,6 +863,21 @@ class BeanstalkAPI {
 			return $this->_execute_curl("changesets", $revision . "." . $this->format . "?repository_id=" . $repo_id);
 	}
 
+	/**
+	 * Return the diff for a specified repository ID and changeset ID
+	 * 
+	 * @link http://api.beanstalkapp.com/changeset.html
+	 * @param integer $repo_id		required
+	 * @param integer $revision		required
+	 * @return SimpleXMLElement|array
+	 */
+	public function find_changeset_diffs($repo_id, $revision) {
+		if(empty($repo_id) || empty($revision))
+			throw new InvalidArgumentException("Changeset ID and repository ID required");
+		else
+			return $this->_execute_curl("changesets", $revision . "/differences." . $this->format . "?repository_id=" . $repo_id);
+	}
+
 
 	//
 	// Comments

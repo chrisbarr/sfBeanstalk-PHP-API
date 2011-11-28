@@ -81,6 +81,7 @@ List of available function calls:
 * `find_all_changesets();`
 * `find_single_repository_changesets(repo_id);`
 * `find_single_changeset(repo_id, revision);`
+* `find_changeset_diffs(repo_id, revision);`
 
 #### Comments ####
 * `find_all_comments(repo_id);`
