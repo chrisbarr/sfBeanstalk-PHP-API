@@ -1555,7 +1555,13 @@ class BeanstalkAPI {
 		
 		if(!is_null($write_data))
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $write_data);
-
+		
+		// Special processing for DELETE requests
+		if($curl_verb == 'DELETE') {
+			$curl_verb = 'POST';
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-HTTP-Method-Override: DELETE'));
+		}
+		
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $curl_verb);
 
 		$data = curl_exec($ch);
