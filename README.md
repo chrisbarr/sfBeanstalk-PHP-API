@@ -65,6 +65,8 @@ List of available function calls:
 #### Repositories ####
 * `find_all_repositories();`
 * `find_single_repository(repo_id);`
+* `find_repository_branches(repo_id);`
+* `find_repository_tags(repo_id);`
 * `create_repository(name, type_id, title);`
 * `update_repository(repo_id, params);`
 

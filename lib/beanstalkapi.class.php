@@ -528,6 +528,34 @@ class BeanstalkAPI {
 		else
 			return $this->_execute_curl("repositories", $repo_id . "." . $this->format);
 	}
+	
+	/**
+	 * Returns an array of the repository's branches - git only
+	 *
+	 * @link http://api.beanstalkapp.com/repository.html
+	 * @param integer $repo_id
+	 * @return SimpleXMLElement|array
+	 */
+	public function find_repository_branches($repo_id) {
+		if(empty($repo_id))
+			throw new InvalidArgumentException("Repository ID required");
+		else
+			return $this->_execute_curl("repositories", $repo_id . "/branches." . $this->format);
+	}
+
+        /**
+         * Returns an array of the repository's tags - git only
+         *
+         * @link http://api.beanstalkapp.com/repository.html
+         * @param integer $repo_id
+         * @return SimpleXMLElement|array
+         */
+        public function find_repository_tags($repo_id) {
+                if(empty($repo_id))
+                        throw new InvalidArgumentException("Repository ID required");
+                else
+                        return $this->_execute_curl("repositories", $repo_id . "/tags." . $this->format);
+        }
 
 	/**
 	 * Create a repository
@@ -600,7 +628,7 @@ class BeanstalkAPI {
 
 		if(count($params) == 0)
 			throw new InvalidArgumentException("Nothing to update");
-
+		
 		if($this->format == 'xml')
 		{
 			$xml = new SimpleXMLElement('<repository></repository>');
