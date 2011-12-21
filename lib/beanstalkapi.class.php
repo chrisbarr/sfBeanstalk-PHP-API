@@ -1613,6 +1613,11 @@ class BeanstalkAPI {
 		
 		curl_close($ch);
 		
+		// API can return empty responses, just return true
+		if(empty($data)) {
+			return true;
+		}
+		
 		if($this->format == 'xml')
 		{
 			// Process XML into SimpleXMLElement
