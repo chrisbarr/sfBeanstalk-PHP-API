@@ -4,7 +4,7 @@
  * PHP class for connecting to the Beanstalk API
  *
  * @link http://api.beanstalkapp.com/
- * @version 0.8.0
+ * @version 0.9.0
  */
 class BeanstalkAPI {
 	/**
