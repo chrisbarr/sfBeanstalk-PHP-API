@@ -6,7 +6,7 @@ namespace BeanstalkAPI;
  * PHP class for connecting to the Beanstalk API
  *
  * @link http://api.beanstalkapp.com/
- * @version 0.7.2
+ * @version 0.9.0
  */
 class BeanstalkAPI {
 	/**
@@ -308,6 +308,8 @@ class BeanstalkAPI {
 
 	/**
 	 * Return an invitation
+	 * 
+	 * @link http://api.beanstalkapp.com/invitation.html
 	 * @param integer $invitation_id
 	 * @return SimpleXMLElement|array
 	 */
@@ -321,6 +323,8 @@ class BeanstalkAPI {
 
 	/**
 	 * Create an invitation - creates a User and Invitation
+	 * 
+	 * @link http://api.beanstalkapp.com/invitation.html
 	 * @param string $email
 	 * @param string $first_name
 	 * @param string $last_name
@@ -526,6 +530,34 @@ class BeanstalkAPI {
 		else
 			return $this->_execute_curl("repositories", $repo_id . "." . $this->format);
 	}
+	
+	/**
+	 * Returns an array of the repository's branches - git only
+	 *
+	 * @link http://api.beanstalkapp.com/repository.html
+	 * @param integer $repo_id
+	 * @return SimpleXMLElement|array
+	 */
+	public function find_repository_branches($repo_id) {
+		if(empty($repo_id))
+			throw new InvalidArgumentException("Repository ID required");
+		else
+			return $this->_execute_curl("repositories", $repo_id . "/branches." . $this->format);
+	}
+
+        /**
+         * Returns an array of the repository's tags - git only
+         *
+         * @link http://api.beanstalkapp.com/repository.html
+         * @param integer $repo_id
+         * @return SimpleXMLElement|array
+         */
+        public function find_repository_tags($repo_id) {
+                if(empty($repo_id))
+                        throw new InvalidArgumentException("Repository ID required");
+                else
+                        return $this->_execute_curl("repositories", $repo_id . "/tags." . $this->format);
+        }
 
 	/**
 	 * Create a repository
@@ -598,7 +630,7 @@ class BeanstalkAPI {
 
 		if(count($params) == 0)
 			throw new InvalidArgumentException("Nothing to update");
-
+		
 		if($this->format == 'xml')
 		{
 			$xml = new SimpleXMLElement('<repository></repository>');
@@ -640,6 +672,8 @@ class BeanstalkAPI {
 
 	/**
 	 * Find an import - also returns the status of the import
+	 * 
+	 * @link http://api.beanstalkapp.com/repository_import.html
 	 * @return SimpleXMLElement|array
 	 */
 	public function find_import($import_id)
@@ -652,7 +686,9 @@ class BeanstalkAPI {
 
 	/**
 	 * Import an SVN dump into a repository
-	 * @param integer $repos_id
+	 * 
+	 * @link http://api.beanstalkapp.com/repository_import.html
+	 * @param integer $repo_id
 	 * @param string $import_url
 	 * @return SimpleXMLElement|array
 	 */
@@ -855,6 +891,21 @@ class BeanstalkAPI {
 			throw new InvalidArgumentException("Changeset ID and repository ID required");
 		else
 			return $this->_execute_curl("changesets", $revision . "." . $this->format . "?repository_id=" . $repo_id);
+	}
+
+	/**
+	 * Return the diff for a specified repository ID and changeset ID
+	 * 
+	 * @link http://api.beanstalkapp.com/changeset.html
+	 * @param integer $repo_id		required
+	 * @param integer $revision		required
+	 * @return SimpleXMLElement|array
+	 */
+	public function find_changeset_diffs($repo_id, $revision) {
+		if(empty($repo_id) || empty($revision))
+			throw new InvalidArgumentException("Changeset ID and repository ID required");
+		else
+			return $this->_execute_curl("changesets", $revision . "/differences." . $this->format . "?repository_id=" . $repo_id);
 	}
 
 
@@ -1534,7 +1585,13 @@ class BeanstalkAPI {
 		
 		if(!is_null($write_data))
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $write_data);
-
+		
+		// Special processing for DELETE requests
+		if($curl_verb == 'DELETE') {
+			$curl_verb = 'POST';
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-HTTP-Method-Override: DELETE'));
+		}
+		
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $curl_verb);
 
 		$data = curl_exec($ch);
@@ -1557,6 +1614,11 @@ class BeanstalkAPI {
 		}
 		
 		curl_close($ch);
+		
+		// API can return empty responses, just return true
+		if(empty($data)) {
+			return true;
+		}
 		
 		if($this->format == 'xml')
 		{

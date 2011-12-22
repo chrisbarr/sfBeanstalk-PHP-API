@@ -1,4 +1,4 @@
-# Beanstalk PHP API v0.7.2 Documentation #
+# Beanstalk PHP API v0.9.0 Documentation #
 
 ## Installation ##
 Requires PHP 5, libcurl library and SimpleXML extension
@@ -27,7 +27,7 @@ Make sure to put your account details in the appropriate places.
 
 Now call the API functions using the `$Beanstalk` variable, ie. `$Beanstalk->find_all_users();`
 
-The BeanstalkAPI object can use either XML or JSON to communicate with your Beanstalk account. By default it uses JSON, and will return an array as the response. If you want to use XML, create the object like this:
+The BeanstalkAPI object can use either XML or JSON to communicate with your Beanstalk account. It will use JSON by default and return an array as the response. If you want to use XML just provide 'xml' as the 4th parameter:
 
 	$Beanstalk = new BeanstalkAPI('ACCOUNT_NAME_HERE', 'USERNAME_HERE', 'PASSWORD_HERE', 'xml');
 
@@ -36,48 +36,76 @@ and it will return a SimpleXMLElement.
 ### API Methods ###
 List of available function calls:
 
+#### Account Details ####
 * `get_account_details();`
 * `update_account_details();`
+
+#### Plans ####
 * `find_all_plans();`
+
+#### Users ####
 * `find_all_users();`
 * `find_single_user(user_id);`
 * `find_current_user();`
 * `create_user(login, email, first_name, last_name, password);`
 * `update_user(user_id, params);`
 * `delete_user(user_id);`
+
+#### Invitations ####
 * `find_invitation(invitation_id);`
 * `create_invitation(email, first_name, last_name);`
+
+#### Public Keys ####
 * `find_all_public_keys();`
 * `find_single_public_key(key_id);`
 * `create_public_key(content);`
 * `update_public_key(key_id, params);`
 * `delete_public_key(key_id);`
+
+#### Repositories ####
 * `find_all_repositories();`
 * `find_single_repository(repo_id);`
+* `find_repository_branches(repo_id);`
+* `find_repository_tags(repo_id);`
 * `create_repository(name, type_id, title);`
 * `update_repository(repo_id, params);`
+
+#### Imports ####
 * `find_import(import_id);`
 * `create_import(repo_id, import_url);`
+
+#### User Permissions ####
 * `find_user_permissions(user_id);`
 * `create_user_permissions(user_id, repo_id, read, write, full_deployments_access);`
 * `delete_user_permissions(user_id);`
+
+#### Changesets ####
 * `find_all_changesets();`
 * `find_single_repository_changesets(repo_id);`
 * `find_single_changeset(repo_id, revision);`
+* `find_changeset_diffs(repo_id, revision);`
+
+#### Comments ####
 * `find_all_comments(repo_id);`
 * `find_all_changeset_comments(repo_id, revision);`
 * `find_single_user_comments(user_id);`
 * `find_single_comment(repo_id, comment_id);`
 * `create_comment(repo_id, revision_id, body, file_path, line_number);`
+
+#### Server Environments ####
 * `find_all_server_environments(repo_id);`
 * `find_single_server_environment(repo_id, environment_id);`
 * `create_server_environment(repo_id, name, automatic);`
 * `update_server_environment(repo_id, environment_id, params);`
+
+#### Release Servers ####
 * `find_all_release_servers(repo_id, environment_id);`
 * `find_single_release_server(repo_id, server_id);`
 * `create_release_server(repo_id, environment_id, name, local_path, remote_path, remote_addr, protocol, port, login, password);`
 * `update_release_server(repo_id, server_id, params);`
 * `delete_release_server(repo_id, server_id);`
+
+#### Releases ####
 * `find_all_releases();`
 * `find_all_repository_releases(repo_id);`
 * `find_single_release(repo_id, release_id);`
