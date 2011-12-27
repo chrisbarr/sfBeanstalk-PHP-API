@@ -1,6 +1,6 @@
 <?php
 
-namespace BeanstalkAPI;
+namespace Beanstalk;
 
 /**
  * PHP class for connecting to the Beanstalk API
